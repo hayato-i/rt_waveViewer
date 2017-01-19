@@ -9,8 +9,8 @@ window.AudioContext = window.AudioContext       ||
                       window.webkitAudioContext;
 
 // canvasサイズの定義
-const WIDTH = 640;
-const HEIGHT = 360;
+const WIDTH = 512;
+const HEIGHT = 512;
 
 (function(){
 
@@ -35,9 +35,9 @@ const HEIGHT = 360;
 
         let gradline = [];
 
-        for(let i = 0; i < 256; ++i) {
-            gradline[i] = ctx.createLinearGradient(0, 256 - i, 0, 256);
-            let n = (i & 64) * 2;
+        for(let i = 0; i < 512; ++i) {
+            gradline[i] = ctx.createLinearGradient(0, 512 - i, 0, 512);
+            let n = (i & 128) * 2;
             gradline[i].addColorStop(0, "rgb(255,0,0)");
             gradline[i].addColorStop(1, "rgb(255," + i + ",0)");
         }
@@ -60,14 +60,14 @@ const HEIGHT = 360;
             // 出力ノードににマイク音声ノードを接続
             analyser.connect(context.destination);
 
-            setInterval(function(){
-                canvas.fillStyle = gradbase;
-                canvas.fillRect(0, 0, 255, 255);
+            setInterval(function draw(){
+                ctx.fillStyle = gradbase;
+                ctx.fillRect(0, 0, 511, 511);
                 let audioAnalyseData = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteTimeDomainData(audioAnalyseData); //Waveform Data
-                for(var i = 0; i < 256; ++i) {
+                for(var i = 0; i < 512; ++i) {
                     ctx.fillStyle = gradline[audioAnalyseData[i]];
-                    ctx.fillRect(i, 256 - audioAnalyseData[i], 1, audioAnalyseData[i]);
+                    ctx.fillRect(i, 512 - audioAnalyseData[i], 1, audioAnalyseData[i]);
                 }
             },100);
 
@@ -78,9 +78,19 @@ const HEIGHT = 360;
         */
         let  errorCallback = function(error) {
             console.log("No mic!!");
+            setInterval(function draw(){
+                ctx.fillStyle = gradbase;
+                ctx.fillRect(0, 0, 511, 511);
+                let audioAnalyseData = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteTimeDomainData(audioAnalyseData); //Waveform Data
+                for(var i = 0; i < 512; ++i) {
+                    ctx.fillStyle = gradline[audioAnalyseData[i]];
+                    ctx.fillRect(i, 512 - audioAnalyseData[i], 1, audioAnalyseData[i]);
+                }
+            },100);
         };
     
         navigator.getUserMedia(mic, successCallback, errorCallback);
     },false);
-    
+
 })();
