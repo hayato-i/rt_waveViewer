@@ -8,6 +8,10 @@ window.navigator.getUserMedia = navigator.getUserMedia       ||
 window.AudioContext = window.AudioContext       || 
                       window.webkitAudioContext;
 
+// canvasサイズの定義
+const WIDTH = 640;
+const HEIGHT = 360;
+
 (function(){
 
     // AudioContext生成
@@ -16,15 +20,15 @@ window.AudioContext = window.AudioContext       ||
     // アナライザー生成
     let analyzer = context.createAnalyser();
 
-    analyzer.fftSize = 2048;
-
     // マイクにアクセス
     let mic = {audio:true, camera:false};
 
     /**
     * @param {MediaStream|LocalMediaStream} stream
     */
+
     let successCallback = function(stream){
+
         // MediaStreamAudioSourceNodeのインスタンスを生成
         let source = context.createMediaStreamSource(stream);
 
@@ -33,6 +37,9 @@ window.AudioContext = window.AudioContext       ||
 
         // 出力ノードににマイク音声ノードを接続
         analyzer.connect(context.destination);
+
+
+ 
     }
 
     /**
