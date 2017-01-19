@@ -1,28 +1,41 @@
-window.onload = function(){
-    // vender prefixes
-    navigator.getUserMedia = navigator.getUserMedia       ||
-                             navigator.webkitGetUserMedia ||
-                             navigator.mozGetUserMedia;
+// Vender prefixes
+// WebRTC
+window.navigator.getUserMedia = navigator.getUserMedia       ||
+                                navigator.webkitGetUserMedia ||
+                                navigator.mozGetUserMedia;
+                                
+// WebAudio
+window.AudioContext = window.AudioContext       || 
+                      window.webkitAudioContext;
 
+(function(){
+
+    // AudioContext生成
+    let context = new AudioContext();
 
     // マイクにアクセス
-    let mic = {audio:ture};
+    let mic = {audio:true, camera:false};
 
     /**
     * @param {MediaStream|LocalMediaStream} stream
     */
     let successCallback = function(stream){
+        // MediaStreamAudioSourceNodeのインスタンスを生成
+        let source = context.createMediaStreamSource(stream);
 
+        //
+
+        // 出力ノードににマイク音声ノードを接続
+        source.connect(context.destination);
     }
 
     /**
     * @param {NavigatorUserMediaError|MediaStreamError} error
     */
-    var errorCallback = function(error) {
-    // do something ....
+    let  errorCallback = function(error) {
+        // do something ....
     };
     
     navigator.getUserMedia(mic, successCallback, errorCallback);
 
-
-}
+})();
