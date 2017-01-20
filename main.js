@@ -16,21 +16,6 @@ const HEIGHT = 360;
 const FFTSIZE = 2048;
 const SMOOTHING = 0.8;
 
-/* 波形表示か周波数表示かの切り替えボタンにしたい
-function onLoaded() {
-    let button = document.querySelector('button');
-    button.removeAttribute('disabled');
-    button.innerHTML = 'Wave/Freq';
-};
-*/
-
-window.requestAnimFrame = (function(){
-    return  window.requestAnimationFrame || 
-    function( callback ){
-        window.setTimeout(callback, 1000 / 60);
-    };
-})();
-
 (function(){
 
     window.addEventListener('load', function(){
@@ -43,7 +28,6 @@ window.requestAnimFrame = (function(){
         // 離散フーリエ変換精度
         analyser.smoothingTimeConstant = SMOOTHING;
         analyser.fftSize = FFTSIZE;                
-                
 
         // Canvas初期化
         let canvas = document.getElementById('analyser');
@@ -101,7 +85,7 @@ window.requestAnimFrame = (function(){
                     drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
                     drawContext.fillRect(i * barWidth, offset, barWidth, height);
                 }
-
+                
                 // 音声波形描画
                 for (let i = 0; i < analyser.frequencyBinCount; i++) {
                     let value = times[i];
