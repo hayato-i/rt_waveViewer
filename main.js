@@ -13,10 +13,11 @@ const WIDTH = 480;
 const HEIGHT = 240;
 
 // いろいろスムーズに描画するための設定　ちゃんと把握してね
-const FFTSIZE = 2048;
+const FFTSIZE = 1024;
 const SMOOTHING = 0.8;
 
 // Effect系のフラグ
+let DELAY_ON = false;
 let DELAY_TIME = 0.0;
 let FEEDBACK_GAIN = 0.0;
 let DRY_GAIN = 1.0;
@@ -31,20 +32,21 @@ let WET_GAIN = 0.0;
             if(DELAY_ON === false){
                 delay_b.value = "Delay Off";
                 DELAY_ON = true;
+                DRY_GAIN = 0.9;
+                WET_GAIN = 0.5;
+                DELAY_TIME = 0.3;
+                FEEDBACK_GAIN = 0.3;
             }
             else if(DELAY_ON === true){
                 delay_b.value = "Delay On";
                 DELAY_ON = false;
                 DRY_GAIN = 1.0;
                 WET_GAIN = 0.0;
-                DLAY_TIME = 0.0;
+                DELAY_TIME = 0.0;
+                FEEDBACK_GAIN = 0.0;
             }
         });
 
-        let delay_r = document.getElementById('delay_r')
-        delay_r.addEventListener('onchange',function(){
-
-        });
 
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
@@ -112,6 +114,7 @@ let WET_GAIN = 0.0;
                 source.connect(delay);
                 delay.connect(wet);
                 wet.connect(analyser);
+
                 delay.connect(feedback);
                 feedback.connect(delay);
 

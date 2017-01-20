@@ -7,3 +7,7 @@ canvas {
     background-color:black;
     border: 5px grey solid;
 }
+
+#freq{
+    position:relative;
+}
