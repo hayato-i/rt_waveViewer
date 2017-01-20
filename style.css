@@ -3,6 +3,10 @@ body {
   color: #ccc;
 }
 
+.box{
+    display: inline;
+}
+
 canvas {
     background-color:black;
     border: 5px grey solid;
