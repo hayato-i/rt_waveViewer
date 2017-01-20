@@ -24,6 +24,13 @@ function onLoaded() {
 };
 */
 
+window.requestAnimFrame = (function(){
+    return  window.requestAnimationFrame || 
+    function( callback ){
+        window.setTimeout(callback, 1000 / 60);
+    };
+})();
+
 (function(){
 
     window.addEventListener('load', function(){
@@ -32,15 +39,11 @@ function onLoaded() {
     
         // アナライザー生成
         let analyser = context.createAnalyser();
-
+        
         // 離散フーリエ変換精度
         analyser.smoothingTimeConstant = SMOOTHING;
-        analyser.fftSize = FFTSIZE;
-    
-        // 最大音量、最小音量の設定
-        analyser.minDecibels = -140;
-        analyser.maxDecibels = 0;
-
+        analyser.fftSize = FFTSIZE;                
+                
 
         // Canvas初期化
         let canvas = document.getElementById('analyser');
@@ -49,6 +52,10 @@ function onLoaded() {
         // Canvas サイズ
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
+    
+        // 最大音量、最小音量の設定
+        analyser.minDecibels = -140;
+        analyser.maxDecibels = 0;
 
         // マイクにアクセス
         let mic = {audio:true, camera:false};
@@ -57,7 +64,7 @@ function onLoaded() {
         * @param {MediaStream|LocalMediaStream} stream
         */
 
-        // マイク認識ができたら常に描画
+        // マイク認識ができたら
         let successCallback = function(stream){
 
             // MediaStreamAudioSourceNodeのインスタンスを生成
@@ -69,18 +76,21 @@ function onLoaded() {
             // 出力ノードににマイク音声ノードを接続
             analyser.connect(context.destination);
 
+            // ヴィジュアライザ描画
             setInterval(function draw(){
+                
+                drawContext.clearRect(0, 0, canvas.width, canvas.height);
                 
                 // 音声波形と、周波数波形のデータ確保
                 let freqs = new Uint8Array(analyser.frequencyBinCount); // 周波数データ
                 let times = new Uint8Array(analyser.frequencyBinCount); // 音声波形データ
-                
+
                 analyser.getByteFrequencyData(freqs); // Frequency Data
                 analyser.getByteTimeDomainData(times); // Waveform Data
 
                 let width = Math.floor(1/freqs.length, 10);
 
-                // Draw the frequency domain chart.
+                // 周波数データ描画
                 for (let i = 0; i < analyser.frequencyBinCount; i++) {
                     let value = freqs[i];
                     let percent = value / 256;
@@ -92,7 +102,7 @@ function onLoaded() {
                     drawContext.fillRect(i * barWidth, offset, barWidth, height);
                 }
 
-                // Draw the time domain chart.
+                // 音声波形描画
                 for (let i = 0; i < analyser.frequencyBinCount; i++) {
                     let value = times[i];
                     let percent = value / 256;
@@ -103,8 +113,8 @@ function onLoaded() {
                     drawContext.fillRect(i * barWidth, offset, 1, 2);
                 }
 
+            },1000/60);
 
-            },50);
         }
 
         /**
