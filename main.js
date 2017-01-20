@@ -13,7 +13,7 @@ const WIDTH = 480;
 const HEIGHT = 240;
 
 // いろいろスムーズに描画するための設定　ちゃんと把握してね
-const FFTSIZE = 1024;
+const FFTSIZE = 2048;
 const SMOOTHING = 0.8;
 
 // Effect系のフラグ
@@ -27,26 +27,24 @@ let WET_GAIN = 0.0;
 
     window.addEventListener('load', function(){
         // イベント駆動　表示変更系
-        let delay_b = document.getElementById('delay_b')
+        let delay_b = document.getElementById('delay_b');
         delay_b.addEventListener('click',function(){
             if(DELAY_ON === false){
-                delay_b.value = "Delay Off";
                 DELAY_ON = true;
                 DRY_GAIN = 0.9;
                 WET_GAIN = 0.5;
-                DELAY_TIME = 0.3;
+                DELAY_TIME = delayTime.value;
                 FEEDBACK_GAIN = 0.3;
             }
             else if(DELAY_ON === true){
-                delay_b.value = "Delay On";
                 DELAY_ON = false;
                 DRY_GAIN = 1.0;
                 WET_GAIN = 0.0;
                 DELAY_TIME = 0.0;
                 FEEDBACK_GAIN = 0.0;
             }
-        });
-
+        },false);
+        
 
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();

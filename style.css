@@ -1,15 +1,27 @@
 body {
   font-family: 'Open Sans', sans-serif;
-  color: #ccc;
+  color: black;
 }
 
 .box{
     display: inline;
 }
 
+#delay_b{
+    border: 0px;
+    width:102px;
+    height:24px;
+    background: url(./img/delayOff.png) no-repeat;
+}
+ 
+#delay_b:hover{
+    cursor: pointer;
+    opacity:0.5;
+}
+
 canvas {
     background-color:black;
-    border: 5px grey solid;
+    border: 3px #443344 solid;
 }
 
 #freq{
