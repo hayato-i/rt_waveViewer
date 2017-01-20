@@ -19,17 +19,28 @@ const SMOOTHING = 0.8;
 (function(){
 
     window.addEventListener('load', function(){
-        // AudioContext生成
+        // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
-    
-        // アナライザー生成
+
+        // delayVenderPrefixed
+        context.createDelay = context.createDelay || context.createDelayNode;
+
+        context.createGain = context.createGain || context.createGainNode;
+        
+        let convolver = context.createConvolver();
+        
+        // アナライザー生成-----------------------------------------------------------------------------
         let analyser = context.createAnalyser();
         
         // 離散フーリエ変換精度
         analyser.smoothingTimeConstant = SMOOTHING;
         analyser.fftSize = FFTSIZE;                
+        
+        // 最大音量、最小音量の設定
+        analyser.minDecibels = -140;
+        analyser.maxDecibels = 0;
 
-        // Canvas初期化
+        // Canvas--------------------------------------------------------------------------------------
         let canvas = document.getElementById('analyser');
         let drawContext = canvas.getContext("2d");
 
@@ -37,17 +48,12 @@ const SMOOTHING = 0.8;
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
     
-        // 最大音量、最小音量の設定
-        analyser.minDecibels = -140;
-        analyser.maxDecibels = 0;
-
         // マイクにアクセス
         let mic = {audio:true, camera:false};
 
         /**
         * @param {MediaStream|LocalMediaStream} stream
         */
-
         // マイク認識ができたら
         let successCallback = function(stream){
 
@@ -57,10 +63,8 @@ const SMOOTHING = 0.8;
             // マイク音声をアナライザーノードに接続
             source.connect(analyser);
 
-            // 出力ノードににマイク音声ノードを接続
-            analyser.connect(context.destination);
 
-            // ヴィジュアライザ描画
+            // ヴィジュアライザ描画----------------------------------------------------------------------
             setInterval(function draw(){
                 
                 drawContext.clearRect(0, 0, canvas.width, canvas.height);
@@ -85,7 +89,7 @@ const SMOOTHING = 0.8;
                     drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
                     drawContext.fillRect(i * barWidth, offset, barWidth, height);
                 }
-                
+
                 // 音声波形描画
                 for (let i = 0; i < analyser.frequencyBinCount; i++) {
                     let value = times[i];
