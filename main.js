@@ -21,13 +21,6 @@ const SMOOTHING = 0.8;
     window.addEventListener('load', function(){
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
-
-        // delayVenderPrefixed
-        context.createDelay = context.createDelay || context.createDelayNode;
-
-        context.createGain = context.createGain || context.createGainNode;
-        
-        let convolver = context.createConvolver();
         
         // アナライザー生成-----------------------------------------------------------------------------
         let analyser = context.createAnalyser();
@@ -41,13 +34,18 @@ const SMOOTHING = 0.8;
         analyser.maxDecibels = 0;
 
         // Canvas--------------------------------------------------------------------------------------
-        let canvas = document.getElementById('analyser');
-        let drawContext = canvas.getContext("2d");
+        let canvas1 = document.getElementById('wave');
+        let drawC1 = canvas1.getContext("2d");
+
+        let canvas2 = document.getElementById('freq');
+        let drawC2 = canvas2.getContext("2d");
 
         // Canvas サイズ
-        canvas.width = WIDTH;
-        canvas.height = HEIGHT;
-    
+        canvas1.width = WIDTH;
+        canvas1.height = HEIGHT;
+        canvas2.width = WIDTH;
+        canvas2.height = HEIGHT;
+        
         // マイクにアクセス
         let mic = {audio:true, camera:false};
 
@@ -63,12 +61,14 @@ const SMOOTHING = 0.8;
             // マイク音声をアナライザーノードに接続
             source.connect(analyser);
 
-
             // ヴィジュアライザ描画----------------------------------------------------------------------
             setInterval(function draw(){
                 
-                drawContext.clearRect(0, 0, canvas.width, canvas.height);
-                
+                drawC1.clearRect(0, 0, canvas1.width, canvas1.height);
+                drawC2.clearRect(0, 0, canvas2.width, canvas2.height);
+                /*
+
+                */
                 // 音声波形と、周波数波形のデータ確保
                 let freqs = new Uint8Array(analyser.frequencyBinCount); // 周波数データ
                 let times = new Uint8Array(analyser.frequencyBinCount); // 音声波形データ
@@ -86,8 +86,8 @@ const SMOOTHING = 0.8;
                     let offset = HEIGHT - height - 1;
                     let barWidth = WIDTH/analyser.frequencyBinCount;
                     let hue = i/analyser.frequencyBinCount * 360;
-                    drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
-                    drawContext.fillRect(i * barWidth, offset, barWidth, height);
+                    drawC2.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+                    drawC2.fillRect(i * barWidth, offset, barWidth, height);
                 }
 
                 // 音声波形描画
@@ -97,8 +97,8 @@ const SMOOTHING = 0.8;
                     let height = HEIGHT * percent;
                     let offset = HEIGHT - height - 1;
                     let barWidth = WIDTH/analyser.frequencyBinCount;
-                    drawContext.fillStyle = 'white';
-                    drawContext.fillRect(i * barWidth, offset, 1, 2);
+                    drawC1.fillStyle = 'white';
+                    drawC1.fillRect(i * barWidth, offset, 1, 2);
                 }
 
             },1000/60);
@@ -110,7 +110,7 @@ const SMOOTHING = 0.8;
         */
         // マイクが無いよ！
         let  errorCallback = function(error) {
-            console.log("No mic!!");
+            alert("No mic!!");
         };
     
         navigator.getUserMedia(mic, successCallback, errorCallback);
