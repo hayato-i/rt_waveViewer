@@ -21,6 +21,7 @@ const SMOOTHING = 0.8;
     window.addEventListener('load', function(){
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
+        let destination = context.destination;
         
         // アナライザー生成-----------------------------------------------------------------------------
         let analyser = context.createAnalyser();
@@ -58,17 +59,20 @@ const SMOOTHING = 0.8;
             // MediaStreamAudioSourceNodeのインスタンスを生成
             let source = context.createMediaStreamSource(stream);
 
-            // マイク音声をアナライザーノードに接続
-            source.connect(analyser);
-
             // ヴィジュアライザ描画----------------------------------------------------------------------
             setInterval(function draw(){
+
                 
+                // マイク音声をアナライザーノードに接続
+                source.connect(analyser);
+
+                // アナライザーノードを出力ノードに接続  
+                analyser.connect(destination);
+
+                // Canvasクリア
                 drawC1.clearRect(0, 0, canvas1.width, canvas1.height);
                 drawC2.clearRect(0, 0, canvas2.width, canvas2.height);
-                /*
 
-                */
                 // 音声波形と、周波数波形のデータ確保
                 let freqs = new Uint8Array(analyser.frequencyBinCount); // 周波数データ
                 let times = new Uint8Array(analyser.frequencyBinCount); // 音声波形データ
@@ -78,19 +82,7 @@ const SMOOTHING = 0.8;
 
                 let width = Math.floor(1/freqs.length, 10);
 
-                // 周波数データ描画
-                for (let i = 0; i < analyser.frequencyBinCount; i++) {
-                    let value = freqs[i];
-                    let percent = value / 256;
-                    let height = HEIGHT * percent;
-                    let offset = HEIGHT - height - 1;
-                    let barWidth = WIDTH/analyser.frequencyBinCount;
-                    let hue = i/analyser.frequencyBinCount * 360;
-                    drawC2.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
-                    drawC2.fillRect(i * barWidth, offset, barWidth, height);
-                }
-
-                // 音声波形描画
+                // 音声波形描画--------------------------------------------------------------------------
                 for (let i = 0; i < analyser.frequencyBinCount; i++) {
                     let value = times[i];
                     let percent = value / 256;
@@ -101,6 +93,17 @@ const SMOOTHING = 0.8;
                     drawC1.fillRect(i * barWidth, offset, 1, 2);
                 }
 
+                // 周波数データ描画----------------------------------------------------------------------
+                for (let i = 0; i < analyser.frequencyBinCount; i++) {
+                    let value = freqs[i];
+                    let percent = value / 256;
+                    let height = HEIGHT * percent;
+                    let offset = HEIGHT - height - 1;
+                    let barWidth = WIDTH/analyser.frequencyBinCount;
+                    let hue = i/analyser.frequencyBinCount * 360;
+                    drawC2.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+                    drawC2.fillRect(i * barWidth, offset, barWidth, height);
+                }
             },1000/60);
 
         }

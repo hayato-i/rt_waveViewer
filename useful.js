@@ -3,5 +3,5 @@ class DrawVisualyser{
 }
 
 class Effecter{
-    
+
 }
