@@ -22,7 +22,7 @@ const SMOOTHING = 0.8;
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
         let destination = context.destination;
-        
+
         // アナライザー生成-----------------------------------------------------------------------------
         let analyser = context.createAnalyser();
         
@@ -91,6 +91,18 @@ const SMOOTHING = 0.8;
                     let barWidth = WIDTH/analyser.frequencyBinCount;
                     drawC1.fillStyle = 'white';
                     drawC1.fillRect(i * barWidth, offset, 1, 2);
+                }
+
+                // Gridやテキスト描画
+                var textYs = ['1.00', '0.50', '0.00','-0.50' ,'-1.00'];
+                for (var i = 0, len = textYs.length; i < len; i++) {
+                    var text = textYs[i];
+                    var gy   = ((1 - parseFloat(text)) / 2) * canvas1.height;
+                    drawC1.fillStyle = '#22FF22';
+                    // Draw grid (Y)
+                    drawC1.fillRect(0, gy, canvas1.width, 1);
+                    // Draw text (Y)
+                    drawC1.fillText(text, 0, gy);
                 }
 
                 // 周波数データ描画----------------------------------------------------------------------
