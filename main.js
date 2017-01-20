@@ -9,19 +9,56 @@ window.AudioContext = window.AudioContext       ||
                       window.webkitAudioContext;
 
 // canvasサイズの定義
-const WIDTH = 640;
-const HEIGHT = 360;
+const WIDTH = 480;
+const HEIGHT = 240;
 
 // いろいろスムーズに描画するための設定　ちゃんと把握してね
 const FFTSIZE = 2048;
 const SMOOTHING = 0.8;
 
+// Effect系のフラグ
+let DELAY_TIME = 0.0;
+let FEEDBACK_GAIN = 0.0;
+let DRY_GAIN = 1.0;
+let WET_GAIN = 0.0;
+
 (function(){
 
     window.addEventListener('load', function(){
+        // イベント駆動　表示変更系
+        let delay_b = document.getElementById('delay_b')
+        delay_b.addEventListener('click',function(){
+            if(DELAY_ON === false){
+                delay_b.value = "Delay Off";
+                DELAY_ON = true;
+            }
+            else if(DELAY_ON === true){
+                delay_b.value = "Delay On";
+                DELAY_ON = false;
+                DRY_GAIN = 1.0;
+                WET_GAIN = 0.0;
+                DLAY_TIME = 0.0;
+            }
+        });
+
+        let delay_r = document.getElementById('delay_r')
+        delay_r.addEventListener('onchange',function(){
+
+        });
+
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
         let destination = context.destination;
+        
+        // Delayノード---------------------------------------------------------------------------------
+        context.createDelay = context.createDelay || context.createDelayNode;
+        context.createGain = context.createGain || context.createGainNode;
+        
+        let delay = context.createDelay();
+        let dry = context.createGain();
+        let wet = context.createGain();
+        let feedback = context.createGain();
+
 
         // アナライザー生成-----------------------------------------------------------------------------
         let analyser = context.createAnalyser();
@@ -61,13 +98,25 @@ const SMOOTHING = 0.8;
 
             // ヴィジュアライザ描画----------------------------------------------------------------------
             setInterval(function draw(){
-
-                
                 // マイク音声をアナライザーノードに接続
                 source.connect(analyser);
 
+                // ディレイノード設定、接続。美しくない。
+                delay.delayTime.value = DELAY_TIME;
+                dry.gain.value = DRY_GAIN;
+                wet.gain.value = WET_GAIN;
+                feedback.gain.value = FEEDBACK_GAIN;
+
+                source.connect(dry);
+                dry.connect(analyser);
+                source.connect(delay);
+                delay.connect(wet);
+                wet.connect(analyser);
+                delay.connect(feedback);
+                feedback.connect(delay);
+
                 // アナライザーノードを出力ノードに接続  
-                analyser.connect(destination);
+                analyser.connect(destination);  
 
                 // Canvasクリア
                 drawC1.clearRect(0, 0, canvas1.width, canvas1.height);
