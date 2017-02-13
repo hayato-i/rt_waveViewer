@@ -13,8 +13,8 @@ const WIDTH = 480;
 const HEIGHT = 240;
 
 // いろいろスムーズに描画するための設定　ちゃんと把握してね
-const FFTSIZE = 2048;
-const SMOOTHING = 0.8;
+const FFTSIZE = 1024;
+const SMOOTHING = 0.7;
 
 // Effect系のフラグ
 let DELAY_ON = false;
@@ -34,7 +34,8 @@ let WET_GAIN = 0.0;
                 DRY_GAIN = 0.9;
                 WET_GAIN = 0.5;
                 DELAY_TIME = delayTime.value;
-                FEEDBACK_GAIN = 0.3;
+                FEEDBACK_GAIN = 0.5;
+                delay_b.area1.value = "./img/delayOff.png";
             }
             else if(DELAY_ON === true){
                 DELAY_ON = false;
@@ -42,6 +43,7 @@ let WET_GAIN = 0.0;
                 WET_GAIN = 0.0;
                 DELAY_TIME = 0.0;
                 FEEDBACK_GAIN = 0.0;
+                delay_b.area1.src = "./img/delayOn.png";
             }
         },false);
         
@@ -143,7 +145,7 @@ let WET_GAIN = 0.0;
                     drawC1.fillRect(i * barWidth, offset, 1, 2);
                 }
 
-                // Gridやテキスト描画
+                // 音声波形用グリッド線
                 var textYs = ['1.00', '0.50', '0.00','-0.50' ,'-1.00'];
                 for (var i = 0, len = textYs.length; i < len; i++) {
                     var text = textYs[i];
