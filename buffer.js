@@ -56,25 +56,20 @@ let url = "/wav/2mix.wav";
         canvas2.height = HEIGHT;
         
         console.log(context.sampleRate);
-
-        let channels = 2;
-        context.sampleRate
-        let frameCount = context.sampleRate * 2.0;
-        
-        let buffer = context.createBuffer(channels, frameCount, context.sampleRate);
+        let buffer = context.createBuffer(2, (22050*2)*110, 44100);
         LoadSample(context, url);
-        
+
         let src = context.createBufferSource();
         src.buffer = buffer;
         src.connect(analyser);
         // アナライザーノードを出力ノードに接続  
-        analyser.connect(destination);  
+        src.connect(destination);  
         src.start();
-        
+
+        /*
         // ヴィジュアライザ描画----------------------------------------------------------------------
         setInterval(function draw(){
 
-           
             // Canvasクリア
             drawC1.clearRect(0, 0, canvas1.width, canvas1.height);
             drawC2.clearRect(0, 0, canvas2.width, canvas2.height);
@@ -125,7 +120,7 @@ let url = "/wav/2mix.wav";
             
             
         }, 1000/60);
-
+        */
         function LoadSample(ctx, url) {
             var req = new XMLHttpRequest();
             req.open("GET", url, true);
@@ -137,4 +132,5 @@ let url = "/wav/2mix.wav";
             }
             req.send();
         }
+
 })();
