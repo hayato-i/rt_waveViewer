@@ -42,6 +42,7 @@ let url = "/wav/2mix.wav";
         analyser.minDecibels = -140;
         analyser.maxDecibels = 0;
 
+        /*
         // Canvas--------------------------------------------------------------------------------------
         let canvas1 = document.getElementById('wave');
         let drawC1 = canvas1.getContext("2d");
@@ -54,7 +55,7 @@ let url = "/wav/2mix.wav";
         canvas1.height = HEIGHT;
         canvas2.width = WIDTH;
         canvas2.height = HEIGHT;
-        
+        */
         console.log(context.sampleRate);
         let buffer = context.createBuffer(2, (22050*2)*110, 44100);
         LoadSample(context, url);
