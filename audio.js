@@ -18,7 +18,6 @@ const SMOOTHING = 0.7;
 
 let url = "/wav/2mix.wav";
 
-
 // AudioContext-------------------------------------------------------------------------------
 let context = new AudioContext();
 let destination = context.destination;

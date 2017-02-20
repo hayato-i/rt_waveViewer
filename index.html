@@ -1,9 +1,23 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script id="vs" type="x-shader/x-vertex">
+attribute vec3 position;
+uniform   mat4 mvpMatrix;
+
+void main(){
+	gl_Position = mvpMatrix * vec4(position, 1.0);
+}
+		</script>
+		<script id="fs" type="x-shader/x-fragment">
+precision mediump float;
+void main(){
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+		</script>
         <link rel="stylesheet" href="style.css">
-        <script src="buffer.js"></script>
+        <script src="minmatrix.js"></script>
         <script src="viewer.js"></script>
         <title> RealTime-WebAudio</title>
     </head>
