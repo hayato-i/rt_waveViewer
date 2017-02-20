@@ -4,26 +4,30 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script id="vs" type="x-shader/x-vertex">
 attribute vec3 position;
+attribute vec4 color;
 uniform   mat4 mvpMatrix;
+varying   vec4 vColor;
 
 void main(){
 	gl_Position = mvpMatrix * vec4(position, 1.0);
+    vColor = color;
 }
 		</script>
 		<script id="fs" type="x-shader/x-fragment">
 precision mediump float;
+varying vec4 vColor;
 void main(){
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	gl_FragColor = vColor;
 }
 		</script>
         <link rel="stylesheet" href="style.css">
-        <script src="viewer.js"></script>
         <script src="minMatrix.js"></script>
+        <script src="viewer.js"></script>
         <title> RealTime-WebAudio</title>
     </head>
     <body>
         <div>
-            <canvas id="main" width="1400" height="1080"></canvas>
+            <canvas id="main"></canvas>
         </div>
         <div class="box">
             <canvas id="wave" width="640" height="360"></canvas>

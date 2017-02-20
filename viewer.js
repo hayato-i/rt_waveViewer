@@ -24,7 +24,10 @@ window.onload = function(){
 
     // Canvas設定
     mainc = document.getElementById('main');
-    gl = mainc.getContext('webgl');
+    mainc.width = 1400;
+    mainc.height = 1200;
+
+    gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
 
     // - シェーダとプログラムオブジェクトの初期化 ---------------------------------
 	// シェーダのソースを取得
@@ -40,20 +43,33 @@ window.onload = function(){
 
 	// - 頂点属性に関する処理 -----------------------------------------------------
 	// attributeLocationの取得
-	var attLocation = gl.getAttribLocation(prg, 'position');
+	var attLocation = [];
+    attLocation[0] = gl.getAttribLocation(prg, 'position');
+    attLocation[1] = gl.getAttribLocation(prg, 'color');
 
 	// attributeの要素数
-	var attStride = 3;
+	var attStride = [];
+    attStride[0] = 3;
+    attStride[1] = 4;
 
 	// モデル(頂点)データ
 	var circleData = circle(4);
     var vPosition = circleData.p;
     var index = circleData.idx;
+    var vColor = [
+		 1.0, 0.0, 0.0, 1.0,
+		 0.0, 1.0, 0.0, 1.0,
+		 0.0, 0.0, 1.0, 1.0,
+		 1.0, 1.0, 1.0, 1.0,
+         0.0, 0.0, 0.0, 1.0
+	];
 
 	// VBOの生成
-	var vbo = create_vbo(vPosition);
+	var attVBO = [];
+    attVBO[0] = create_vbo(vPosition);
+    attVBO[1] = create_vbo(vColor);
 
-    set_attribute(vbo, attLocation, attStride);
+    set_attribute(attVBO, attLocation, attStride);
 
     var ibo = create_ibo(index);
 
@@ -71,7 +87,6 @@ window.onload = function(){
 	var vpMatrix = m.identity(m.create());
 	var mvpMatrix = m.identity(m.create());
 
-
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
 	// ビューポートを設定する
 	gl.viewport(0, 0, mainc.width, mainc.height);
@@ -85,7 +100,6 @@ window.onload = function(){
 	// canvasを初期化
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-
 	// - 行列の計算 ---------------------------------------------------------------
 	// ビュー座標変換行列
 	m.lookAt([0.0, 0.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
@@ -97,14 +111,12 @@ window.onload = function(){
 	m.multiply(pMatrix, vMatrix, vpMatrix);
 	m.multiply(vpMatrix, mMatrix, mvpMatrix);
 
-
 	// - uniform 関連の初期化と登録 -----------------------------------------------
 	// uniformLocationの取得
 	var uniLocation = gl.getUniformLocation(prg, 'mvpMatrix');
 
 	// uniformLocationへ座標変換行列を登録
 	gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
-
 
 	// - レンダリング -------------------------------------------------------------
 	// モデルの描画
@@ -113,81 +125,80 @@ window.onload = function(){
 	// コンテキストの再描画
 	gl.flush();
 
-
-	// - 各種ユーティリティ関数 ---------------------------------------------------
-	/**
-	 * シェーダを生成する関数
-	 * @param {string} source シェーダのソースとなるテキスト
-	 * @param {number} type シェーダのタイプを表す定数 gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
-	 * @return {object} 生成に成功した場合はシェーダオブジェクト、失敗した場合は null
-	 */
-	function create_shader(source, type){
-		// シェーダを格納する変数
-		var shader;
-		
-		// シェーダの生成
-		shader = gl.createShader(type);
-		
-		// 生成されたシェーダにソースを割り当てる
-		gl.shaderSource(shader, source);
-		
-		// シェーダをコンパイルする
-		gl.compileShader(shader);
-		
-		// シェーダが正しくコンパイルされたかチェック
-		if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
-			
-			// 成功していたらシェーダを返して終了
-			return shader;
-		}else{
-			
-			// 失敗していたらエラーログをアラートする
-			alert(gl.getShaderInfoLog(shader));
-			
-			// null を返して終了
-			return null;
-		}
-	}
-
-
-    function circle(num){
-        var pos = new Array();
-        var id = new Array();
-        var x, y, z;
-        var rad = Math.PI * 2 / num;
-        for(var i=0; i<num; i++){
-            var j = Math.round(rad * i);
-            x = Math.round(Math.cos(j));
-            y = Math.round(Math.sin(j));
-            z = 0.0;
-            pos.push(x, y, z);
-        }
-        pos.push(0.0, 0.0, 0.0);
-
-        for(i=0; i<num-1; i++){
-            id.push(num+1, i, i+1);
-        }
-        id.push(num+1, num-1, 0);
-
-        return {p:pos, idx:id};
-    }
-
-    function sphere(){
-
-    }
-
-    /* 
-     num:分割数
-     r:底面の半径
-     rad:角度
-     len:高さ
-     */
-    function cone(){
-
-    }
-
 };
 
+function circle(num){
+    var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    var x, y, z;
+    var t = 360 / num;
+    var rad = t * Math.PI / 180;
+    for(var i=0; i<num; i++){
+        var j = rad * i;
+        x = parseFloat(Math.round(Math.cos(j)));
+        y = parseFloat(Math.round(Math.sin(j)));
+        z = 0.0;
+        pos.push(x, y, z);
+    }
+    pos.push(0.0, 0.0, 0.0);
+
+    for(i=0; i<num-1; i++){
+        id.push(num+1, i, i+1);
+    }
+    id.push(num+1, num-1, 0);
+
+    return {p:pos, idx:id};
+}
+
+function sphere(){
+
+}
+
+/* 
+    num:分割数
+    r:底面の半径
+    rad:角度
+    len:高さ
+    */
+function cone(){
+
+}
+
+// - 各種ユーティリティ関数 ---------------------------------------------------
+/**
+ * シェーダを生成する関数
+ * @param {string} source シェーダのソースとなるテキスト
+ * @param {number} type シェーダのタイプを表す定数 gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+ * @return {object} 生成に成功した場合はシェーダオブジェクト、失敗した場合は null
+ */
+function create_shader(source, type){
+    // シェーダを格納する変数
+    var shader;
+    
+    // シェーダの生成
+    shader = gl.createShader(type);
+    
+    // 生成されたシェーダにソースを割り当てる
+    gl.shaderSource(shader, source);
+    
+    // シェーダをコンパイルする
+    gl.compileShader(shader);
+    
+    // シェーダが正しくコンパイルされたかチェック
+    if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
+        
+        // 成功していたらシェーダを返して終了
+        return shader;
+    }else{
+        
+        // 失敗していたらエラーログをアラートする
+        alert(gl.getShaderInfoLog(shader));
+        
+        // null を返して終了
+        return null;
+    }
+}
 
 /**
  * プログラムオブジェクトを生成しシェーダをリンクする関数
