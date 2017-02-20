@@ -12,25 +12,40 @@ window.AudioContext = window.AudioContext       ||
 const WIDTH = 480;
 const HEIGHT = 240;
 
-// いろいろスムーズに描画するための設定
+// analyser用パラメータ
 const FFTSIZE = 2048;
 const SMOOTHING = 0.7;
 
-// Effect系のフラグ
-let DELAY_ON = false;
-let DELAY_TIME = 0.0;
-let FEEDBACK_GAIN = 0.0;
-let DRY_GAIN = 1.0;
-let WET_GAIN = 0.0;
 let url = "/wav/2mix.wav";
 
 
-(window.onload = function(){
+// AudioContext-------------------------------------------------------------------------------
+let context = new AudioContext();
+let destination = context.destination;
 
-        // AudioContext-------------------------------------------------------------------------------
-        let context = new AudioContext();
-        let destination = context.destination;
+var getAudioBuffer = function(url, fn) {  
+  var req = new XMLHttpRequest();
+  // array buffer を指定
+  req.responseType = 'arraybuffer';
 
+  req.onreadystatechange = function() {
+    if (req.readyState === 4) {
+      if (req.status === 0 || req.status === 200) {
+        // array buffer を audio buffer に変換
+        context.decodeAudioData(req.response, function(buffer) {
+          // コールバックを実行
+          fn(buffer);
+        });
+      }
+    }
+  };
+
+  req.open('GET', url, true);
+  req.send('');
+};
+
+(window.onload = function(buffer){
+        
         // アナライザー生成-----------------------------------------------------------------------------
         let analyser = context.createAnalyser();
         
@@ -42,7 +57,6 @@ let url = "/wav/2mix.wav";
         analyser.minDecibels = -140;
         analyser.maxDecibels = 0;
 
-        /*
         // Canvas--------------------------------------------------------------------------------------
         let canvas1 = document.getElementById('wave');
         let drawC1 = canvas1.getContext("2d");
@@ -55,18 +69,19 @@ let url = "/wav/2mix.wav";
         canvas1.height = HEIGHT;
         canvas2.width = WIDTH;
         canvas2.height = HEIGHT;
-        */
-        console.log(context.sampleRate);
-        let buffer = context.createBuffer(2, (22050*2)*110, 44100);
-        LoadSample(context, url);
+        
 
-        let src = context.createBufferSource();
-        src.buffer = buffer;
-        src.connect(analyser);
-        // アナライザーノードを出力ノードに接続  
-        src.connect(destination);  
-        src.start();
-
+        // buffer取得
+        getAudioBuffer(url, function(buffer){   
+            let src = context.createBufferSource();
+            src.buffer = buffer;
+            // アナライザーノードを出力ノードに接続  
+            src.connect(analyser);
+            analyser.connect(destination);
+            // 再生
+            src.start(0);
+        });
+        
         /*
         // ヴィジュアライザ描画----------------------------------------------------------------------
         setInterval(function draw(){
@@ -119,19 +134,6 @@ let url = "/wav/2mix.wav";
                 drawC2.fillRect(i * barWidth, offset, barWidth, height);
             }
             
-            
         }, 1000/60);
         */
-        function LoadSample(ctx, url) {
-            var req = new XMLHttpRequest();
-            req.open("GET", url, true);
-            req.responseType = "arraybuffer";
-            req.onload = function() {
-                if(req.response) {
-                    ctx.decodeAudioData(req.response).then(function(b){buffer=b;},function(){});
-                }
-            }
-            req.send();
-        }
-
 })();
