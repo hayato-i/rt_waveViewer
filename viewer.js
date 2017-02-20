@@ -1,6 +1,6 @@
-let glCanvas, gl, vs, fs;
+var mainc, gl, vs, fs;
 
-(window.onload = function(){
+window.onload = function(){
     /***************************************************************************
     *　実装にあたって、描画するものの目的/要件の洗い出し
     *■ サウンドリスナの位置（中心点、LR表示を座標で？+X->R, -X->L）
@@ -23,8 +23,8 @@ let glCanvas, gl, vs, fs;
     ***************************************************************************/
 
     // Canvas設定
-    glCanvas = document.getElementById('3d');
-    gl = glCanvas.getContext('webgl') || glCanvas.getContext('experimental-webgl');
+    mainc = document.getElementById('main');
+    gl = mainc.getContext('webgl');
 
     // - シェーダとプログラムオブジェクトの初期化 ---------------------------------
 	// シェーダのソースを取得
@@ -38,7 +38,6 @@ let glCanvas, gl, vs, fs;
 	// プログラムオブジェクトの生成とリンク
 	var prg = create_program(vShader, fShader);
 
-
 	// - 頂点属性に関する処理 -----------------------------------------------------
 	// attributeLocationの取得
 	var attLocation = gl.getAttribLocation(prg, 'position');
@@ -47,24 +46,18 @@ let glCanvas, gl, vs, fs;
 	var attStride = 3;
 
 	// モデル(頂点)データ
-	var vPosition = [
-		 0.0,  0.5,  0.0,
-		 0.5,  0.0,  0.0,
-		-0.5,  0.0,  0.0
-	];
+	var circleData = circle(4);
+    var vPosition = circleData.p;
+    var index = circleData.idx;
 
 	// VBOの生成
 	var vbo = create_vbo(vPosition);
 
-	// VBOをバインド
-	gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    set_attribute(vbo, attLocation, attStride);
 
-	// attribute属性を有効にする
-	gl.enableVertexAttribArray(attLocation);
+    var ibo = create_ibo(index);
 
-	// attribute属性を登録
-	gl.vertexAttribPointer(attLocation, attStride, gl.FLOAT, false, 0, 0);
-
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
 
 	// - 行列の初期化 -------------------------------------------------------------
 	// minMatrix.js を用いた行列関連処理
@@ -81,7 +74,7 @@ let glCanvas, gl, vs, fs;
 
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
 	// ビューポートを設定する
-	gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+	gl.viewport(0, 0, mainc.width, mainc.height);
 
 	// canvasを初期化する色を設定する
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -98,7 +91,7 @@ let glCanvas, gl, vs, fs;
 	m.lookAt([0.0, 0.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
 
 	// プロジェクション座標変換行列
-	m.perspective(45, c.width / c.height, 0.1, 10.0, pMatrix);
+	m.perspective(45, mainc.width / mainc.height, 0.1, 10.0, pMatrix);
 
 	// 各行列を掛け合わせ座標変換行列を完成させる
 	m.multiply(pMatrix, vMatrix, vpMatrix);
@@ -115,7 +108,7 @@ let glCanvas, gl, vs, fs;
 
 	// - レンダリング -------------------------------------------------------------
 	// モデルの描画
-	gl.drawArrays(gl.TRIANGLES, 0, 3);
+	gl.drawElements(gl.TRIANGLES, index.length, gl.UNSIGNED_SHORT, 0);
 
 	// コンテキストの再描画
 	gl.flush();
@@ -157,8 +150,26 @@ let glCanvas, gl, vs, fs;
 	}
 
 
-    function circle(){
+    function circle(num){
+        var pos = new Array();
+        var id = new Array();
+        var x, y, z;
+        var rad = Math.PI * 2 / num;
+        for(var i=0; i<num; i++){
+            var j = Math.round(rad * i);
+            x = Math.round(Math.cos(j));
+            y = Math.round(Math.sin(j));
+            z = 0.0;
+            pos.push(x, y, z);
+        }
+        pos.push(0.0, 0.0, 0.0);
 
+        for(i=0; i<num-1; i++){
+            id.push(num+1, i, i+1);
+        }
+        id.push(num+1, num-1, 0);
+
+        return {p:pos, idx:id};
     }
 
     function sphere(){
@@ -173,10 +184,9 @@ let glCanvas, gl, vs, fs;
      */
     function cone(){
 
-        return {p:pos, c:col, id:idx}
     }
 
-})()
+};
 
 
 /**
@@ -234,4 +244,46 @@ function create_vbo(data){
 	
 	// 生成した VBO を返して終了
 	return vbo;
+}
+
+/**
+ * IBOを生成する関数
+ * @param {Array.<number>} data 頂点インデックスを格納した一次元配列
+ * @return {object} インデックスバッファオブジェクト
+ */
+function create_ibo(data){
+	// バッファオブジェクトの生成
+	var ibo = gl.createBuffer();
+	
+	// バッファをバインドする
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+	
+	// バッファにデータをセット
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Int16Array(data), gl.STATIC_DRAW);
+	
+	// バッファのバインドを無効化
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	
+	// 生成したIBOを返して終了
+	return ibo;
+}
+
+/**
+ * VBOをバインドし登録する関数
+ * @param {object} vbo 頂点バッファオブジェクト
+ * @param {Array.<number>} attribute location を格納した配列
+ * @param {Array.<number>} アトリビュートのストライドを格納した配列
+ */
+function set_attribute(vbo, attL, attS){
+	// 引数として受け取った配列を処理する
+	for(var i in vbo){
+		// バッファをバインドする
+		gl.bindBuffer(gl.ARRAY_BUFFER, vbo[i]);
+		
+		// attributeLocationを有効にする
+		gl.enableVertexAttribArray(attL[i]);
+		
+		// attributeLocationを通知し登録する
+		gl.vertexAttribPointer(attL[i], attS[i], gl.FLOAT, false, 0, 0);
+	}
 }
