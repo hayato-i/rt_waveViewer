@@ -45,29 +45,18 @@ window.onload = function(){
 	// attributeLocationの取得
 	var attLocation = [];
     attLocation[0] = gl.getAttribLocation(prg, 'position');
-    attLocation[1] = gl.getAttribLocation(prg, 'color');
-
 	// attributeの要素数
 	var attStride = [];
     attStride[0] = 3;
-    attStride[1] = 4;
 
 	// モデル(頂点)データ
-	var circleData = circle(4);
+	var circleData = circle(36);
     var vPosition = circleData.p;
     var index = circleData.idx;
-    var vColor = [
-		 1.0, 0.0, 0.0, 1.0,
-		 0.0, 1.0, 0.0, 1.0,
-		 0.0, 0.0, 1.0, 1.0,
-		 1.0, 1.0, 1.0, 1.0,
-         0.0, 0.0, 0.0, 1.0
-	];
 
 	// VBOの生成
 	var attVBO = [];
     attVBO[0] = create_vbo(vPosition);
-    attVBO[1] = create_vbo(vColor);
 
     set_attribute(attVBO, attLocation, attStride);
 
@@ -120,12 +109,12 @@ window.onload = function(){
 
 	// - レンダリング -------------------------------------------------------------
 	// モデルの描画
-	gl.drawElements(gl.TRIANGLES, index.length, gl.UNSIGNED_SHORT, 0);
+	gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
 
 	// コンテキストの再描画
 	gl.flush();
 
-};
+}
 
 function circle(num){
     var pos = new Array();
@@ -134,19 +123,19 @@ function circle(num){
     var x, y, z;
     var t = 360 / num;
     var rad = t * Math.PI / 180;
-    for(var i=0; i<num; i++){
+    for(var i = 0; i < num; i++){
         var j = rad * i;
-        x = parseFloat(Math.round(Math.cos(j)));
-        y = parseFloat(Math.round(Math.sin(j)));
+        x = Math.cos(j);
+        y = Math.sin(j);
         z = 0.0;
         pos.push(x, y, z);
     }
     pos.push(0.0, 0.0, 0.0);
 
     for(i=0; i<num-1; i++){
-        id.push(num+1, i, i+1);
+        id.push(num, i, i+1);
     }
-    id.push(num+1, num-1, 0);
+    id.push(num, num-1, 0);
 
     return {p:pos, idx:id};
 }

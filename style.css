@@ -19,9 +19,6 @@ body {
     opacity:0.5;
 }
 
-#3d{
-    display: inline;
-}
 
 canvas {
     background-color:black;
