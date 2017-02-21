@@ -117,12 +117,12 @@ window.onload = function(){
 
 	// アニメーション用変数設定
 	var count = 0;
+	var run = true;
 
 	callAudio();
 	render();
 
 	function render(){
-		count ++;
 		
 		// アニメーション用のカウンタからラジアンを計算
 		var rad = (count % 360) * Math.PI / 180;
@@ -174,6 +174,9 @@ window.onload = function(){
 
 		// コンテキストの再描画
 		gl.flush();
+
+
+		if(run){requestAnimationFrame(render);}
 	}
 
 }
