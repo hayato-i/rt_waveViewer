@@ -2,7 +2,7 @@ var mainc, gl, vs, fs;
 
 window.onload = function(){
     /***************************************************************************
-    *　実装にあたって、描画するものの目的/要件の洗い出し
+    *　ヴィジュアル面の実装にあたって、描画するものの目的/要件の洗い出し
     *■ サウンドリスナの位置（中心点、LR表示を座標で？+X->R, -X->L）
     *・HRTF適用が条件であるため、左右の見分けがつくような描画。
     *・初期段階では動かすことを考慮しない。第二段階では動かすことも想定。
@@ -45,24 +45,40 @@ window.onload = function(){
 	// attributeLocationの取得
 	var attLocation = [];
     attLocation[0] = gl.getAttribLocation(prg, 'position');
+
 	// attributeの要素数
 	var attStride = [];
     attStride[0] = 3;
 
-	// モデル(頂点)データ
-	var circleData = circle(36);
-    var vPosition = circleData.p;
-    var index = circleData.idx;
+	// Sound cone----------------------------------------------------------------
+	var coneData = soundCone(45, 1);
+    var sPosition = coneData.p;
+    var sIndex = coneData.idx;
 
 	// VBOの生成
-	var attVBO = [];
-    attVBO[0] = create_vbo(vPosition);
+	var coneVBO = [];
+    coneVBO[0] = create_vbo(sPosition);
 
-    set_attribute(attVBO, attLocation, attStride);
+	// IBOの生成
+    var sIbo = create_ibo(sIndex);
 
-    var ibo = create_ibo(index);
+	// Circle---------------------------------------------------------------------
+	var circleData = circle(36);
+	var cPosition = circleData.p;
+	var cIndex = circleData.idx;
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+	// VBOの生成
+	var circleVBO = [];
+    circleVBO[0] = create_vbo(sPosition);
+
+	// IBOの生成
+	var cIbo = create_ibo(cIndex);
+
+	// - uniform関連 -------------------------------------------------------------- *
+	// uniformLocationの取得
+	var uniLocation = [];
+	uniLocation[0] = gl.getUniformLocation(prg, 'mvpMatrix');
+	uniLocation[1] = gl.getUniformLocation(prg, 'invMatrix');
 
 	// - 行列の初期化 -------------------------------------------------------------
 	// minMatrix.js を用いた行列関連処理
@@ -75,6 +91,7 @@ window.onload = function(){
 	var pMatrix = m.identity(m.create());
 	var vpMatrix = m.identity(m.create());
 	var mvpMatrix = m.identity(m.create());
+	var invMatrix = m.identity(m.create());
 
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
 	// ビューポートを設定する
@@ -86,12 +103,9 @@ window.onload = function(){
 	// canvasを初期化する際の深度を設定する
 	gl.clearDepth(1.0);
 
-	// canvasを初期化
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 	// - 行列の計算 ---------------------------------------------------------------
 	// ビュー座標変換行列
-	m.lookAt([0.0, 0.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
+	m.lookAt([0.0, 3.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
 
 	// プロジェクション座標変換行列
 	m.perspective(45, mainc.width / mainc.height, 0.1, 10.0, pMatrix);
@@ -100,19 +114,68 @@ window.onload = function(){
 	m.multiply(pMatrix, vMatrix, vpMatrix);
 	m.multiply(vpMatrix, mMatrix, mvpMatrix);
 
-	// - uniform 関連の初期化と登録 -----------------------------------------------
-	// uniformLocationの取得
-	var uniLocation = gl.getUniformLocation(prg, 'mvpMatrix');
+	// アニメーション用変数設定
+	var count = 0;
 
-	// uniformLocationへ座標変換行列を登録
-	gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
+	render();
 
-	// - レンダリング -------------------------------------------------------------
-	// モデルの描画
-	gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_SHORT, 0);
+	function render(){
+		count ++;
+		
+		// アニメーション用のカウンタからラジアンを計算
+		var rad = (count % 360) * Math.PI / 180;
+		
+		// canvasを初期化
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	// コンテキストの再描画
-	gl.flush();
+		/*-----------------------------------------------------------------------
+		 Cone:モデル変換座標行列
+		-----------------------------------------------------------------------*/
+		m.identity(mMatrix);
+		m.multiply(vpMatrix, mMatrix, mvpMatrix);
+		m.inverse(mMatrix, invMatrix)
+
+		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, invMatrix);
+
+		//VBO,IBOのバインド
+		// VBOのバインドと登録
+		set_attribute(coneVBO, attLocation, attStride);
+		
+		// IBOをバインド
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sIbo);
+
+		// = レンダリング =========================================================
+		// モデルの描画
+		gl.drawElements(gl.LINE_STRIP, sIndex.length, gl.UNSIGNED_SHORT, 0);
+
+		/*-----------------------------------------------------------------------
+		 Circle:モデル変換座標行列
+		-----------------------------------------------------------------------*/
+		m.identity(mMatrix);
+		m.multiply(vpMatrix, mMatrix, mvpMatrix);
+		m.inverse(mMatrix, invMatrix)
+
+		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, invMatrix);
+
+		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, invMatrix);
+
+		//VBO,IBOのバインド
+		// VBOのバインドと登録
+		set_attribute(circleVBO, attLocation, attStride);
+		
+		// IBOをバインド
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cIbo);
+
+		// = レンダリング =========================================================
+		// モデルの描画
+		gl.drawElements(gl.TRIANGLES, cIndex.length, gl.UNSIGNED_SHORT, 0);
+
+		// コンテキストの再描画
+		gl.flush();
+	}
 
 }
 
@@ -140,19 +203,54 @@ function circle(num){
     return {p:pos, idx:id};
 }
 
-function sphere(){
+function sphere(num, col, row, r){
+	var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    var x, y, z;
+    var t = 360 / num;
+    var rad = t * Math.PI / 180;
+    for(var i = 0; i < num; i++){
+        var k = rad * i;
+        x = Math.cos(k);
+        y = Math.sin(k);
+        z = 0.0;
+        pos.push(x, y, z);
+    }
+    pos.push(0.0, 0.0, 0.0);
 
+    for(i=0; i<num-1; i++){
+        id.push(num, i, i+1);
+    }
+    id.push(num, num-1, 0);
+
+    return {p:pos, idx:id};
 }
 
-/* 
-    num:分割数
-    r:底面の半径
-    rad:角度
-    len:高さ
-    */
-function cone(){
+/*---------------------------------------------------------  
+	Cone関数
+---------------------------------------------------------*/
+function soundCone(degree, len){
+	var pos = new Array();
+    var id = new Array();
+    var x, y, z;
+    var rad = degree/2 * Math.PI / 180;
 
+	// 単位円における(0.0, 1.0, 0.0)を基本位置とする
+	// 発音点
+	pos.push(0.0, 1.0, 0.0);
+	// 開きのx
+	var t = Math.tan(rad)/len;
+    // X+
+	pos.push(t, 0.0, 0.0);
+    // X-
+	pos.push(-t, 0.0, 0.0);
+    id.push(1, 0, 2);
+    
+    return {p:pos, idx:id};
 }
+
+
 
 // - 各種ユーティリティ関数 ---------------------------------------------------
 /**
