@@ -1,4 +1,5 @@
 var mainc, gl, vs, fs;
+var rlen = 1.0;
 
 window.onload = function(){
     /***************************************************************************
@@ -24,8 +25,8 @@ window.onload = function(){
 
     // Canvas設定
     mainc = document.getElementById('main');
-    mainc.width = 1400;
-    mainc.height = 1200;
+    mainc.width = 1000;
+    mainc.height = 1000;
 
     gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
 
@@ -63,13 +64,13 @@ window.onload = function(){
     var sIbo = create_ibo(sIndex);
 
 	// Circle---------------------------------------------------------------------
-	var circleData = circle(36);
+	var circleData = circle(36, rlen);
 	var cPosition = circleData.p;
 	var cIndex = circleData.idx;
 
 	// VBOの生成
 	var circleVBO = [];
-    circleVBO[0] = create_vbo(sPosition);
+    circleVBO[0] = create_vbo(cPosition);
 
 	// IBOの生成
 	var cIbo = create_ibo(cIndex);
@@ -105,7 +106,7 @@ window.onload = function(){
 
 	// - 行列の計算 ---------------------------------------------------------------
 	// ビュー座標変換行列
-	m.lookAt([0.0, 3.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
+	m.lookAt([0.0, 0.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
 
 	// プロジェクション座標変換行列
 	m.perspective(45, mainc.width / mainc.height, 0.1, 10.0, pMatrix);
@@ -159,9 +160,6 @@ window.onload = function(){
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, invMatrix);
 
-		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
-		gl.uniformMatrix4fv(uniLocation[1], false, invMatrix);
-
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
 		set_attribute(circleVBO, attLocation, attStride);
@@ -171,7 +169,7 @@ window.onload = function(){
 
 		// = レンダリング =========================================================
 		// モデルの描画
-		gl.drawElements(gl.TRIANGLES, cIndex.length, gl.UNSIGNED_SHORT, 0);
+		gl.drawElements(gl.LINE_STRIP, cIndex.length, gl.UNSIGNED_SHORT, 0);
 
 		// コンテキストの再描画
 		gl.flush();
@@ -179,7 +177,12 @@ window.onload = function(){
 
 }
 
-function circle(num){
+/*---------------------------------------------------------  
+	Circle関数
+	num:分割数
+	r:半径
+---------------------------------------------------------*/
+function circle(num, r){
     var pos = new Array();
     var id = new Array();
     var col = new Array();
@@ -188,8 +191,8 @@ function circle(num){
     var rad = t * Math.PI / 180;
     for(var i = 0; i < num; i++){
         var j = rad * i;
-        x = Math.cos(j);
-        y = Math.sin(j);
+        x = r*Math.cos(j);
+        y = r*Math.sin(j);
         z = 0.0;
         pos.push(x, y, z);
     }
@@ -229,8 +232,10 @@ function sphere(num, col, row, r){
 
 /*---------------------------------------------------------  
 	Cone関数
+	degree:innerAngle
+	r:距離
 ---------------------------------------------------------*/
-function soundCone(degree, len){
+function soundCone(degree, r){
 	var pos = new Array();
     var id = new Array();
     var x, y, z;
@@ -238,9 +243,9 @@ function soundCone(degree, len){
 
 	// 単位円における(0.0, 1.0, 0.0)を基本位置とする
 	// 発音点
-	pos.push(0.0, 1.0, 0.0);
+	pos.push(0.0, r, 0.0);
 	// 開きのx
-	var t = Math.tan(rad)/len;
+	var t = Math.tan(rad);
     // X+
 	pos.push(t, 0.0, 0.0);
     // X-

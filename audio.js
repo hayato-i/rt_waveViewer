@@ -16,11 +16,11 @@ const HEIGHT = 240;
 const FFTSIZE = 2048;
 const SMOOTHING = 0.7;
 
-let url = "/wav/2mix.wav";
+var url = "/wav/2mix.wav";
 
 // AudioContext-------------------------------------------------------------------------------
-let context = new AudioContext();
-let destination = context.destination;
+var context = new AudioContext();
+var destination = context.destination;
 
 var getAudioBuffer = function(url, fn) {  
   var req = new XMLHttpRequest();
@@ -45,8 +45,11 @@ var getAudioBuffer = function(url, fn) {
 
 (window.onload = function(buffer){
         
+        // PannerNode生成
+        var context
+
         // アナライザー生成-----------------------------------------------------------------------------
-        let analyser = context.createAnalyser();
+        var analyser = context.createAnalyser();
         
         // 離散フーリエ変換精度
         analyser.smoothingTimeConstant = SMOOTHING;
@@ -57,11 +60,11 @@ var getAudioBuffer = function(url, fn) {
         analyser.maxDecibels = 0;
 
         // Canvas--------------------------------------------------------------------------------------
-        let canvas1 = document.getElementById('wave');
-        let drawC1 = canvas1.getContext("2d");
+        var canvas1 = document.getElementById('wave');
+        var drawC1 = canvas1.getContext("2d");
 
-        let canvas2 = document.getElementById('freq');
-        let drawC2 = canvas2.getContext("2d");
+        var canvas2 = document.getElementById('freq');
+        var drawC2 = canvas2.getContext("2d");
 
         // Canvas サイズ
         canvas1.width = WIDTH;
@@ -72,7 +75,7 @@ var getAudioBuffer = function(url, fn) {
 
         // buffer取得
         getAudioBuffer(url, function(buffer){   
-            let src = context.createBufferSource();
+            var src = context.createBufferSource();
             src.buffer = buffer;
             // アナライザーノードを出力ノードに接続  
             src.connect(analyser);
