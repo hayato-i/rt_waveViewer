@@ -9,8 +9,12 @@ window.AudioContext = window.AudioContext       ||
                       window.webkitAudioContext;
 
 // canvasサイズの定義
-const WIDTH = 480;
-const HEIGHT = 240;
+const WIDTH = 1000;
+const HEIGHT = 1000;
+
+var xPos = 0;
+var yPos = 0;
+var zPos = -10;
 
 // analyser用パラメータ
 const FFTSIZE = 2048;
@@ -43,10 +47,53 @@ var getAudioBuffer = function(url, fn) {
   req.send('');
 };
 
-(window.onload = function(buffer){
+function callAudio(buffer){
         
         // PannerNode生成
-        var context
+        var panner = context.createPanner();
+        panner.panningModel = 'HRTF';
+        panner.distanceModel = 'inverse';
+        panner.refDistance = 1;
+        panner.maxDistance = 10000;
+        panner.rolloffFactor = 1;
+        panner.coneInnerAngle = 0;
+        panner.coneOuterAngle = 360;
+        panner.coneOuterGain = 0;
+
+        if(panner.orientationX){
+            panner.orientationX.value = 0;
+            panner.orientationY.value = 0;
+            panner.orientationZ.value = 1;
+        }else{
+            panner.setOrientation(1,0,0);
+        }
+
+        if(panner.positionX) {
+            panner.positionX.value = xPos;
+            panner.positionY.value = yPos;
+            panner.positionZ.value = zPos;
+        } else {
+            panner.setPosition(xPos,yPos,zPos);
+        }
+
+        var listener = context.listener;
+
+        if(listener.orientationX){
+            listener.forwordX.value = 0;
+            listener.forwordY.value = 0;
+            listener.forwordZ.value = -1;
+        }else{
+            listener.setOrientation(0,0,-1,0,1,0);
+        }
+
+        if(listener.orientationX){
+            listener.upX.value = 0;
+            listener.upY.value = 1;
+            listener.upZ.value = 0;
+        }else{
+            listener.setOrientation(0,0,-1,0,1,0);
+        }
+
 
         // アナライザー生成-----------------------------------------------------------------------------
         var analyser = context.createAnalyser();
@@ -71,15 +118,15 @@ var getAudioBuffer = function(url, fn) {
         canvas1.height = HEIGHT;
         canvas2.width = WIDTH;
         canvas2.height = HEIGHT;
-        
 
         // buffer取得
         getAudioBuffer(url, function(buffer){   
             var src = context.createBufferSource();
             src.buffer = buffer;
             // アナライザーノードを出力ノードに接続  
-            src.connect(analyser);
-            analyser.connect(destination);
+            src.connect(panner);
+            panner.connect(destination);
+            //analyser.connect(destination);
             // 再生
             src.start(0);
         });
@@ -138,4 +185,4 @@ var getAudioBuffer = function(url, fn) {
             
         }, 1000/60);
         */
-})();
+}

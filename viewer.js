@@ -118,6 +118,7 @@ window.onload = function(){
 	// アニメーション用変数設定
 	var count = 0;
 
+	callAudio();
 	render();
 
 	function render(){
