@@ -86,6 +86,29 @@ window.onload = function(){
 	// IBOの生成
 	var cIbo = create_ibo(cIndex);
 
+	// X,Y axis--------------------------------------------------------------------
+	var xData = xAxis();
+	var xPosition = xData.p;
+	var xColor = xData.c;
+	var xIndex = xData.idx;
+
+	var xVBO = [];
+	xVBO[0] = create_vbo(xPosition);
+	xVBO[1] = create_vbo(xColor);
+
+	var xIbo = create_ibo(xIndex);
+
+	var yData = yAxis();
+	var yPosition = yData.p;
+	var yColor = yData.c;
+	var yIndex = yData.idx;
+
+	var yVBO = [];
+	yVBO[0] = create_vbo(yPosition);
+	yVBO[1] = create_vbo(yColor);
+
+	var yIbo = create_ibo(yIndex);
+
 	// - uniform関連 -------------------------------------------------------------- *
 	// uniformLocationの取得
 	var uniLocation = [];
@@ -200,6 +223,52 @@ window.onload = function(){
 		// モデルの描画
 		gl.drawElements(gl.LINE_STRIP, cIndex.length, gl.UNSIGNED_SHORT, 0);
 
+		/*-----------------------------------------------------------------------
+		 XY Axis
+		-----------------------------------------------------------------------*/
+		m.identity(mMatrix);
+		m.multiply(mMatrix, qMatrix, mMatrix);
+		m.multiply(vpMatrix, mMatrix, mvpMatrix);
+		m.inverse(mMatrix, invMatrix);
+
+		// uniformLocationへ座標変換行列を登録
+		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+		gl.uniform1f(uniLocation[3], false, pointSize);
+
+		//VBO,IBOのバインド
+		// VBOのバインドと登録
+		set_attribute(xVBO, attLocation, attStride);
+		
+		// IBOをバインド
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, xIbo);
+
+		// = レンダリング =========================================================
+		// モデルの描画
+		gl.drawElements(gl.LINES, xIndex.length, gl.UNSIGNED_SHORT, 0);
+
+		m.identity(mMatrix);
+		m.multiply(mMatrix, qMatrix, mMatrix);
+		m.multiply(vpMatrix, mMatrix, mvpMatrix);
+		m.inverse(mMatrix, invMatrix);
+
+		// uniformLocationへ座標変換行列を登録
+		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+		gl.uniform1f(uniLocation[3], false, pointSize);
+
+		//VBO,IBOのバインド
+		// VBOのバインドと登録
+		set_attribute(yVBO, attLocation, attStride);
+		
+		// IBOをバインド
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, yIbo);
+
+		// = レンダリング =========================================================
+		// モデルの描画
+		gl.drawElements(gl.LINES, yIndex.length, gl.UNSIGNED_SHORT, 0);
 		// コンテキストの再描画
 		gl.flush();
 

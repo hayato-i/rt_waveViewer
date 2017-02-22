@@ -32,7 +32,7 @@ function mouseMove(e){
         var cw = mainc.width;
         var ch = mainc.height;
         var wh = 1 / Math.sqrt(cw * cw + ch * ch);
-        var x = e.clientX - mainc.offsetLeft - cw * 0.5;
+        var x = 0;// = e.clientX - mainc.offsetLeft - cw * 0.5;
         var y = e.clientY - mainc.offsetTop - ch * 0.5;
         var sq = Math.sqrt(x * x + y * y);
         var r = sq * 2.0 * Math.PI * wh;
@@ -45,6 +45,44 @@ function mouseMove(e){
     }
 }
 
+
+function xAxis(){
+    var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    pos = [
+        2.0, 0.0, 0.0,
+        -2.0, 0.0, 0.0 
+    ];
+    id = [
+        0,1
+    ];
+    col = [
+        1.0, 0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0, 1.0
+    ];
+
+    return {p:pos, idx:id, c:col};
+}
+
+function yAxis(){
+    var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    pos = [
+        0.0, 2.0, 0.0,
+        0.0, -2.0, 0.0 
+    ];
+    id = [
+        0,1
+    ];
+    col = [
+        0.0, 1.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 1.0
+    ];
+
+    return {p:pos, idx:id, c:col};
+}
 
 
 /*---------------------------------------------------------  
