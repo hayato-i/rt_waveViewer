@@ -51,19 +51,23 @@ window.onload = function(){
 	// attributeLocationの取得
 	var attLocation = [];
     attLocation[0] = gl.getAttribLocation(prg, 'position');
+	attLocation[1] = gl.getAttribLocation(prg, 'vColor');
 
 	// attributeの要素数
 	var attStride = [];
     attStride[0] = 3;
+	attStride[1] = 4;
 
 	// Sound cone----------------------------------------------------------------
 	var coneData = soundCone(45, 1);
     var sPosition = coneData.p;
+	var sColor = coneData.c;
     var sIndex = coneData.idx;
 
 	// VBOの生成
 	var coneVBO = [];
     coneVBO[0] = create_vbo(sPosition);
+	coneVBO[1] = create_vbo(sColor);
 
 	// IBOの生成
     var sIbo = create_ibo(sIndex);
@@ -71,11 +75,13 @@ window.onload = function(){
 	// Circle---------------------------------------------------------------------
 	var circleData = circle(36, rlen);
 	var cPosition = circleData.p;
+	var cColor = circleData.c;
 	var cIndex = circleData.idx;
 
 	// VBOの生成
 	var circleVBO = [];
     circleVBO[0] = create_vbo(cPosition);
+	circleVBO[1] = create_vbo(cColor);
 
 	// IBOの生成
 	var cIbo = create_ibo(cIndex);
@@ -88,8 +94,6 @@ window.onload = function(){
 	uniLocation[2] = gl.getUniformLocation(prg, 'invMatrix');
 	uniLocation[3] = gl.getUniformLocation(prg, 'pointSize');
 	
-	var pointSizeRange = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
-	console.log('pointSizeRange:' + pointSizeRange[0] + ' to ' + pointSizeRange[1]);
 	var pointSize = 8;
 
 	// - 行列の初期化 -------------------------------------------------------------
@@ -135,7 +139,8 @@ window.onload = function(){
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		// アニメーション用のカウンタからラジアンを計算
-		//count++;
+		count++;
+		SRC_POSITION = count;
 		var rad = (SRC_POSITION % 360) * Math.PI / 180;
 
 		forceDirection(panner, rad);
@@ -149,7 +154,7 @@ window.onload = function(){
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
 		m.multiply(mMatrix, qMatrix, mMatrix);
-		//m.rotate(mMatrix, rad, [0, 0, 1], mMatrix);
+		m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -201,84 +206,6 @@ window.onload = function(){
 		if(run){requestAnimationFrame(render);}
 	}
 
-}
-
-/*---------------------------------------------------------  
-	Circle関数
-	num:分割数
-	r:半径
----------------------------------------------------------*/
-function circle(num, r){
-    var pos = new Array();
-    var id = new Array();
-    var col = new Array();
-    var x, y, z;
-    var t = 360 / num;
-    var rad = t * Math.PI / 180;
-    for(var i = 0; i < num; i++){
-        var j = rad * i;
-        x = r*Math.cos(j);
-        y = r*Math.sin(j);
-        z = 0.0;
-        pos.push(x, y, z);
-    }
-    pos.push(0.0, 0.0, 0.0);
-
-    for(i=0; i<num-1; i++){
-        id.push(num, i, i+1);
-    }
-    id.push(num, num-1, 0);
-
-    return {p:pos, idx:id};
-}
-
-function sphere(num, col, row, r){
-	var pos = new Array();
-    var id = new Array();
-    var col = new Array();
-    var x, y, z;
-    var t = 360 / num;
-    var rad = t * Math.PI / 180;
-    for(var i = 0; i < num; i++){
-        var k = rad * i;
-        x = Math.cos(k);
-        y = Math.sin(k);
-        z = 0.0;
-        pos.push(x, y, z);
-    }
-    pos.push(0.0, 0.0, 0.0);
-
-    for(i=0; i<num-1; i++){
-        id.push(num, i, i+1);
-    }
-    id.push(num, num-1, 0);
-
-    return {p:pos, idx:id};
-}
-
-/*---------------------------------------------------------  
-	Cone関数
-	degree:innerAngle
-	r:距離
----------------------------------------------------------*/
-function soundCone(degree, r){
-	var pos = new Array();
-    var id = new Array();
-    var x, y, z;
-    var rad = degree/2 * Math.PI / 180;
-
-	// 単位円における(0.0, 1.0, 0.0)を基本位置とする
-	// 発音点
-	pos.push(0.0, r, 0.0);
-	// 開きのx
-	var t = Math.tan(rad);
-    // X+
-	pos.push(t, 0.0, 0.0);
-    // X-
-	pos.push(-t, 0.0, 0.0);
-    id.push(1, 0, 2);
-    
-    return {p:pos, idx:id};
 }
 
 

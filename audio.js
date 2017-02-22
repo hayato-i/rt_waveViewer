@@ -14,9 +14,6 @@ const HEIGHT = 1000;
 
 var url = "/wav/2mix.wav";
 
-// AudioContext-------------------------------------------------------------------------------
-var context = new AudioContext();
-var destination = context.destination;
 
 var getAudioBuffer = function(url, fn) {  
   var req = new XMLHttpRequest();
