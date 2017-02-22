@@ -5,6 +5,9 @@ var sPosZ = -10;
 var INNER_ANGLE = 120;
 var OUTER_ANGLE = 120;
 var OUTER_GAIN = 0;
+var DIRECTION;
+// 音源位置（同心円状の角度）
+var SRC_POSITION = 270;
 
 // Global Visual パラメータ
 var SOURCE_RARIDUS = (0.0, 0.0, -1.0);
@@ -32,19 +35,5 @@ function mouseMove(e){
             y *= sq;
         }
         q.rotate(r, [y, x, 0.0], qt);
-    }
-}
-
-function mouseDown(e){
-    if(!MOUSE_DOWN) {
-        MOUSE_DOWN = true;
-        console.log("mouse down");
-    }
-}
-
-function mouseUp(e){
-    if(MOUSE_DOWN) {
-        MOUSE_DOWN = false;
-        console.log("mouse down");
     }
 }

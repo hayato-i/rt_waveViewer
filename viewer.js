@@ -29,10 +29,8 @@ window.onload = function(){
 
     // Canvas設定
     mainc = document.getElementById('main');
-    mainc.width = 1000;
-    mainc.height = 1000;
-	mainc.addEventListener('onmouseup', mouseUp, false);
-	mainc.addEventListener('onmousedown', mouseDown, false)
+    mainc.width = 800;
+    mainc.height = 600;
 	mainc.addEventListener('mousemove', mouseMove, true);
 
     gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
@@ -101,9 +99,14 @@ window.onload = function(){
 	var mvpMatrix = m.identity(m.create());
 	var invMatrix = m.identity(m.create());
 
+	// canvasを初期化する色を設定する----------------------------------------------
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	// canvasを初期化する際の深度を設定する
+	gl.clearDepth(1.0);
+
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
 	// カメラの座標
-	var camPosition = [0.0, 0.0, 10.0];
+	var camPosition = [0.0, 0.0, 3.0];
 	
 	// カメラの上方向を表すベクトル
 	var camUpDirection = [0.0, 1.0, 0.0];
@@ -122,34 +125,30 @@ window.onload = function(){
 	function render(){
 
 		// canvasを初期化--------------------------------------------------------
-		// canvasを初期化する色を設定する
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);
-		// canvasを初期化する際の深度を設定する
-		gl.clearDepth(1.0);
+		
 		// canvasを初期化
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		// アニメーション用のカウンタからラジアンを計算
-		count++;
-		var rad = (count % 360) * Math.PI / 180;
+		//count++;
+		var rad = (SRC_POSITION % 360) * Math.PI / 180;
+
+		forceDirection(panner, rad);
+
 		// クォータニオンを行列に適用
 		var qMatrix = m.identity(m.create());
 		q.toMatIV(qt, qMatrix);
-		
-		// モデル座標変換行列の生成
-		m.identity(mMatrix);
-		m.multiply(mMatrix, qMatrix, mMatrix);
-		m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
-		m.multiply(vpMatrix, mMatrix, mvpMatrix);
-		m.inverse(mMatrix, invMatrix);
 
 		/*-----------------------------------------------------------------------
 		 Cone:モデル変換座標行列
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
+		m.multiply(mMatrix, qMatrix, mMatrix);
+		//m.rotate(mMatrix, rad, [0, 0, 1], mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
-		m.inverse(mMatrix, invMatrix)
+		m.inverse(mMatrix, invMatrix);
 
+		// uniformLocationへ座標変換行列を登録
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
@@ -169,9 +168,11 @@ window.onload = function(){
 		 Circle:モデル変換座標行列
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
+		m.multiply(mMatrix, qMatrix, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
-		m.inverse(mMatrix, invMatrix)
+		m.inverse(mMatrix, invMatrix);
 
+		// uniformLocationへ座標変換行列を登録
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);

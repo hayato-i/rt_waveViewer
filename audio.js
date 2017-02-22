@@ -39,11 +39,26 @@ var getAudioBuffer = function(url, fn) {
   req.send('');
 };
 
+// globalアクセスのため
+var panner = context.createPanner();
+
+function forceDirection(pan, inRad){
+    //var rad = Math.PI / 180 * deg;
+    // 現在のpannerと見た目は座標が違う
+    var x = Math.cos(inRad);
+    var y = 0.0
+    var z = -Math.sin(inRad);
+    var dx = -x;
+    var dy = 0.0;
+    var dz = -z;
+    pan.setPosition(x,y,z);
+    pan.setOrientation(dx, dy, dz);
+}
+
 function audioInit(buffer){
         
         // PannerNode生成
         // Class化の必要性あり
-        var panner = context.createPanner();
         panner.panningModel = 'HRTF';
         panner.distanceModel = 'inverse';
         panner.refDistance = 1;
