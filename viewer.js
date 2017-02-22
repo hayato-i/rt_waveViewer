@@ -86,6 +86,11 @@ window.onload = function(){
 	uniLocation[0] = gl.getUniformLocation(prg, 'mvpMatrix');
 	uniLocation[1] = gl.getUniformLocation(prg, 'mMatrix');
 	uniLocation[2] = gl.getUniformLocation(prg, 'invMatrix');
+	uniLocation[3] = gl.getUniformLocation(prg, 'pointSize');
+	
+	var pointSizeRange = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
+	console.log('pointSizeRange:' + pointSizeRange[0] + ' to ' + pointSizeRange[1]);
+	var pointSize = 8;
 
 	// - 行列の初期化 -------------------------------------------------------------
 	// minMatrix.js を用いた行列関連処理
@@ -152,6 +157,7 @@ window.onload = function(){
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+		gl.uniform1f(uniLocation[3], false, pointSize);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
@@ -176,6 +182,7 @@ window.onload = function(){
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+		gl.uniform1f(uniLocation[3], false, pointSize);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録

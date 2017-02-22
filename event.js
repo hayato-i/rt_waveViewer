@@ -6,6 +6,12 @@ var INNER_ANGLE = 120;
 var OUTER_ANGLE = 120;
 var OUTER_GAIN = 0;
 var DIRECTION;
+
+
+// AudioContext-------------------------------------------------------------------------------
+var context = new AudioContext();
+var destination = context.destination;
+
 // 音源位置（同心円状の角度）
 var SRC_POSITION = 270;
 
