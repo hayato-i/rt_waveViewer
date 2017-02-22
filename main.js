@@ -15,52 +15,15 @@ const HEIGHT = 240;
 // いろいろスムーズに描画するための設定　ちゃんと把握してね
 const FFTSIZE = 1024;
 const SMOOTHING = 0.7;
-
-// Effect系のフラグ
-let DELAY_ON = false;
-let DELAY_TIME = 0.0;
-let FEEDBACK_GAIN = 0.0;
-let DRY_GAIN = 1.0;
-let WET_GAIN = 0.0;
-
 (function(){
 
     window.addEventListener('load', function(){
         // イベント駆動　表示変更系
-        let delay_b = document.getElementById('delay_b');
-        delay_b.addEventListener('click',function(){
-            if(DELAY_ON === false){
-                DELAY_ON = true;
-                DRY_GAIN = 0.9;
-                WET_GAIN = 0.5;
-                DELAY_TIME = delayTime.value;
-                FEEDBACK_GAIN = 0.5;
-                delay_b.area1.value = "./img/delayOff.png";
-            }
-            else if(DELAY_ON === true){
-                DELAY_ON = false;
-                DRY_GAIN = 1.0;
-                WET_GAIN = 0.0;
-                DELAY_TIME = 0.0;
-                FEEDBACK_GAIN = 0.0;
-                delay_b.area1.src = "./img/delayOn.png";
-            }
-        },false);
-        
 
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
+        console.log(context.listener);
         let destination = context.destination;
-        
-        // Delayノード---------------------------------------------------------------------------------
-        context.createDelay = context.createDelay || context.createDelayNode;
-        context.createGain = context.createGain || context.createGainNode;
-        
-        let delay = context.createDelay();
-        let dry = context.createGain();
-        let wet = context.createGain();
-        let feedback = context.createGain();
-
 
         // アナライザー生成-----------------------------------------------------------------------------
         let analyser = context.createAnalyser();
@@ -97,26 +60,10 @@ let WET_GAIN = 0.0;
 
             // MediaStreamAudioSourceNodeのインスタンスを生成
             let source = context.createMediaStreamSource(stream);
-
             // ヴィジュアライザ描画----------------------------------------------------------------------
             setInterval(function draw(){
                 // マイク音声をアナライザーノードに接続
                 source.connect(analyser);
-
-                // ディレイノード設定、接続。美しくない。
-                delay.delayTime.value = DELAY_TIME;
-                dry.gain.value = DRY_GAIN;
-                wet.gain.value = WET_GAIN;
-                feedback.gain.value = FEEDBACK_GAIN;
-
-                source.connect(dry);
-                dry.connect(analyser);
-                source.connect(delay);
-                delay.connect(wet);
-                wet.connect(analyser);
-
-                delay.connect(feedback);
-                feedback.connect(delay);
 
                 // アナライザーノードを出力ノードに接続  
                 analyser.connect(destination);  

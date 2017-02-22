@@ -5,6 +5,7 @@
 		<script id="vs" type="x-shader/x-vertex">
 attribute vec3 position;
 uniform   mat4 mvpMatrix;
+uniform   mat4 mMatrix;
 void main(){
 	gl_Position = mvpMatrix * vec4(position, 1.0);
 }
@@ -13,13 +14,14 @@ void main(){
 precision mediump float;
 uniform   mat4 invMatrix;
 void main(){
-	gl_FragColor = 2.0 * vec4(1.0, 1.0, 1.0, 1.0);
+	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 		</script>
         <link rel="stylesheet" href="style.css">
+        <script src="minMatrix.js"></script>
+        <script src="event.js"></script>
         <script src="audio.js"></script>
         <script src="viewer.js"></script>
-        <script src="minMatrix.js"></script>
         <title> RealTime-WebAudio</title>
     </head>
     <body>

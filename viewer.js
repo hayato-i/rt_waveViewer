@@ -1,7 +1,10 @@
-var mainc, gl, vs, fs;
+var gl, vs, fs;
 var rlen = 1.0;
 
 window.onload = function(){
+	// eventとaudioのjavascript呼び出し
+	// ここをMainとする
+	audioInit();
     /***************************************************************************
     *　ヴィジュアル面の実装にあたって、描画するものの目的/要件の洗い出し
     *■ サウンドリスナの位置（中心点、LR表示を座標で？+X->R, -X->L）
@@ -10,8 +13,9 @@ window.onload = function(){
     *■ サウンドソースの位置（同心円状）
     *・サウンドソース一つに対して一つの円、もしくは同じ円上にソースを配置できるようにする（理想）
     *・円の半径は動的に変更できるものとする。
-    *・ソースの形状、見た目は発音方向(innerAngle)に対して円錐を描くようにする。
-    *（低音部分やouterAngleは考慮しないものとする）
+    *・ソースの形状、見た目は発音方向(outerAngle)に対して円錐を描くようにする。
+	*・距離に関しては明示的に参考にできるサンプルがあれば利用。なければ間隔
+	*・同心円状の距離として(x, z)を変更できるようにする。
     *■ それらを視界に確保できるカメラアングル（俯瞰）
     *・視界に収める範囲も動的に変更できるようにする
     *・ズームアップかズームダウンのみ。回転は基本的にしないものとする。
@@ -27,6 +31,9 @@ window.onload = function(){
     mainc = document.getElementById('main');
     mainc.width = 1000;
     mainc.height = 1000;
+	mainc.addEventListener('onmouseup', mouseUp, false);
+	mainc.addEventListener('onmousedown', mouseDown, false)
+	mainc.addEventListener('mousemove', mouseMove, true);
 
     gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
 
@@ -79,13 +86,13 @@ window.onload = function(){
 	// uniformLocationの取得
 	var uniLocation = [];
 	uniLocation[0] = gl.getUniformLocation(prg, 'mvpMatrix');
-	uniLocation[1] = gl.getUniformLocation(prg, 'invMatrix');
+	uniLocation[1] = gl.getUniformLocation(prg, 'mMatrix');
+	uniLocation[2] = gl.getUniformLocation(prg, 'invMatrix');
 
 	// - 行列の初期化 -------------------------------------------------------------
 	// minMatrix.js を用いた行列関連処理
 	// matIVオブジェクトを生成
 	var m = new matIV();
-
 	// 各種行列の生成と初期化
 	var mMatrix = m.identity(m.create());
 	var vMatrix = m.identity(m.create());
@@ -95,40 +102,46 @@ window.onload = function(){
 	var invMatrix = m.identity(m.create());
 
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
-	// ビューポートを設定する
-	gl.viewport(0, 0, mainc.width, mainc.height);
-
-	// canvasを初期化する色を設定する
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-	// canvasを初期化する際の深度を設定する
-	gl.clearDepth(1.0);
-
-	// - 行列の計算 ---------------------------------------------------------------
-	// ビュー座標変換行列
-	m.lookAt([0.0, 0.0, 3.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
-
-	// プロジェクション座標変換行列
-	m.perspective(45, mainc.width / mainc.height, 0.1, 10.0, pMatrix);
-
-	// 各行列を掛け合わせ座標変換行列を完成させる
+	// カメラの座標
+	var camPosition = [0.0, 0.0, 10.0];
+	
+	// カメラの上方向を表すベクトル
+	var camUpDirection = [0.0, 1.0, 0.0];
+	
+	// ビュー×プロジェクション座標変換行列
+	m.lookAt(camPosition, [0, 0, 0], camUpDirection, vMatrix);
+	m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
 	m.multiply(pMatrix, vMatrix, vpMatrix);
-	m.multiply(vpMatrix, mMatrix, mvpMatrix);
 
 	// アニメーション用変数設定
 	var count = 0;
 	var run = true;
 
-	callAudio();
 	render();
 
 	function render(){
-		
-		// アニメーション用のカウンタからラジアンを計算
-		var rad = (count % 360) * Math.PI / 180;
-		
+
+		// canvasを初期化--------------------------------------------------------
+		// canvasを初期化する色を設定する
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		// canvasを初期化する際の深度を設定する
+		gl.clearDepth(1.0);
 		// canvasを初期化
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+		// アニメーション用のカウンタからラジアンを計算
+		count++;
+		var rad = (count % 360) * Math.PI / 180;
+		// クォータニオンを行列に適用
+		var qMatrix = m.identity(m.create());
+		q.toMatIV(qt, qMatrix);
+		
+		// モデル座標変換行列の生成
+		m.identity(mMatrix);
+		m.multiply(mMatrix, qMatrix, mMatrix);
+		m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
+		m.multiply(vpMatrix, mMatrix, mvpMatrix);
+		m.inverse(mMatrix, invMatrix);
 
 		/*-----------------------------------------------------------------------
 		 Cone:モデル変換座標行列
@@ -138,7 +151,8 @@ window.onload = function(){
 		m.inverse(mMatrix, invMatrix)
 
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
-		gl.uniformMatrix4fv(uniLocation[1], false, invMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
@@ -159,7 +173,8 @@ window.onload = function(){
 		m.inverse(mMatrix, invMatrix)
 
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
-		gl.uniformMatrix4fv(uniLocation[1], false, invMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
@@ -174,7 +189,6 @@ window.onload = function(){
 
 		// コンテキストの再描画
 		gl.flush();
-
 
 		if(run){requestAnimationFrame(render);}
 	}
