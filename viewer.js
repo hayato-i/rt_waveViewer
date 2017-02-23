@@ -31,7 +31,7 @@ window.onload = function(){
     mainc = document.getElementById('main');
     mainc.width = 800;
     mainc.height = 600;
-	mainc.addEventListener('mousemove', mouseMove, true);
+	//mainc.addEventListener('mousemove', mouseMove, true);
 
     gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
 
@@ -59,7 +59,7 @@ window.onload = function(){
 	attStride[1] = 4;
 
 	// Sound cone----------------------------------------------------------------
-	var coneData = soundCone(45, 1);
+	var coneData = soundCone(OUTER_ANGLE, DISTANCE);
     var sPosition = coneData.p;
 	var sColor = coneData.c;
     var sIndex = coneData.idx;
@@ -73,7 +73,7 @@ window.onload = function(){
     var sIbo = create_ibo(sIndex);
 
 	// Circle---------------------------------------------------------------------
-	var circleData = circle(36, rlen);
+	var circleData = circle(36, DISTANCE);
 	var cPosition = circleData.p;
 	var cColor = circleData.c;
 	var cIndex = circleData.idx;
@@ -131,10 +131,6 @@ window.onload = function(){
 	var mvpMatrix = m.identity(m.create());
 	var invMatrix = m.identity(m.create());
 
-	// canvasを初期化する色を設定する----------------------------------------------
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	// canvasを初期化する際の深度を設定する
-	gl.clearDepth(1.0);
 
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
 	// カメラの座標
@@ -143,6 +139,12 @@ window.onload = function(){
 	// カメラの上方向を表すベクトル
 	var camUpDirection = [0.0, 1.0, 0.0];
 	
+	// 各種フラグを有効化する
+	gl.enable(gl.BLEND);
+	
+	// ブレンドファクター
+	gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
+
 	// ビュー×プロジェクション座標変換行列
 	m.lookAt(camPosition, [0, 0, 0], camUpDirection, vMatrix);
 	m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
@@ -159,14 +161,12 @@ window.onload = function(){
 		// canvasを初期化--------------------------------------------------------
 		
 		// canvasを初期化
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		// アニメーション用のカウンタからラジアンを計算
 		count++;
-		SRC_POSITION = count;
-		var rad = (SRC_POSITION % 360) * Math.PI / 180;
-
-		forceDirection(panner, rad);
+		var rad = (count % 360) * Math.PI / 180;
 
 		// クォータニオンを行列に適用
 		var qMatrix = m.identity(m.create());
@@ -177,15 +177,16 @@ window.onload = function(){
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
 		m.multiply(mMatrix, qMatrix, mMatrix);
+		//m.rotate(mMatrix, 90, [0, 0, 1], mMatrix);
 		m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
-		// uniformLocationへ座標変換行列を登録
+		// uniformLocationへ登録
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-		gl.uniform1f(uniLocation[3], false, pointSize);
+		gl.uniform1f(uniLocation[3], pointSize);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
@@ -202,7 +203,7 @@ window.onload = function(){
 		 Circle:モデル変換座標行列
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
-		m.multiply(mMatrix, qMatrix, mMatrix);
+		//m.multiply(mMatrix, qMatrix, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -210,7 +211,7 @@ window.onload = function(){
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-		gl.uniform1f(uniLocation[3], false, pointSize);
+		gl.uniform1f(uniLocation[3], pointSize);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
@@ -221,13 +222,13 @@ window.onload = function(){
 
 		// = レンダリング =========================================================
 		// モデルの描画
-		gl.drawElements(gl.LINE_STRIP, cIndex.length, gl.UNSIGNED_SHORT, 0);
+		gl.drawArrays(gl.POINTS, 0, cIndex.length);
 
 		/*-----------------------------------------------------------------------
 		 XY Axis
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
-		m.multiply(mMatrix, qMatrix, mMatrix);
+		//m.multiply(mMatrix, qMatrix, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -235,7 +236,7 @@ window.onload = function(){
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-		gl.uniform1f(uniLocation[3], false, pointSize);
+		gl.uniform1f(uniLocation[3], pointSize);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
@@ -249,7 +250,7 @@ window.onload = function(){
 		gl.drawElements(gl.LINES, xIndex.length, gl.UNSIGNED_SHORT, 0);
 
 		m.identity(mMatrix);
-		m.multiply(mMatrix, qMatrix, mMatrix);
+		//m.multiply(mMatrix, qMatrix, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -257,7 +258,7 @@ window.onload = function(){
 		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
 		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
 		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-		gl.uniform1f(uniLocation[3], false, pointSize);
+		gl.uniform1f(uniLocation[3], pointSize);
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録

@@ -10,7 +10,7 @@ window.AudioContext = window.AudioContext       ||
 
 // canvasサイズの定義
 const WIDTH = 480;
-const HEIGHT = 240;
+const HEIGHT = 256;
 
 // いろいろスムーズに描画するための設定　ちゃんと把握してね
 const FFTSIZE = 1024;
@@ -22,7 +22,6 @@ const SMOOTHING = 0.7;
 
         // AudioContext-------------------------------------------------------------------------------
         let context = new AudioContext();
-        console.log(context.listener);
         let destination = context.destination;
 
         // アナライザー生成-----------------------------------------------------------------------------
@@ -34,7 +33,7 @@ const SMOOTHING = 0.7;
         
         // 最大音量、最小音量の設定
         analyser.minDecibels = -140;
-        analyser.maxDecibels = 0;
+        analyser.maxDecibels = -30;
 
         // Canvas--------------------------------------------------------------------------------------
         let canvas1 = document.getElementById('wave');
@@ -71,23 +70,25 @@ const SMOOTHING = 0.7;
                 // Canvasクリア
                 drawC1.clearRect(0, 0, canvas1.width, canvas1.height);
                 drawC2.clearRect(0, 0, canvas2.width, canvas2.height);
-
+                
                 // 音声波形と、周波数波形のデータ確保
-                let freqs = new Uint8Array(analyser.frequencyBinCount); // 周波数データ
-                let times = new Uint8Array(analyser.frequencyBinCount); // 音声波形データ
+                // frequencyBinCountはFFTSIZE/2 -> nyquist frequency
+                let afbc = analyser.frequencyBinCount;
+                let freqs = new Uint8Array(afbc); // 周波数データ
+                let times = new Uint8Array(afbc); // 音声波形データ
 
                 analyser.getByteFrequencyData(freqs); // Frequency Data
                 analyser.getByteTimeDomainData(times); // Waveform Data
-
                 let width = Math.floor(1/freqs.length, 10);
 
+
                 // 音声波形描画--------------------------------------------------------------------------
-                for (let i = 0; i < analyser.frequencyBinCount; i++) {
+                for (let i = 0; i < afbc; i++) {
                     let value = times[i];
                     let percent = value / 256;
                     let height = HEIGHT * percent;
                     let offset = HEIGHT - height - 1;
-                    let barWidth = WIDTH/analyser.frequencyBinCount;
+                    let barWidth = WIDTH/afbc;
                     drawC1.fillStyle = 'white';
                     drawC1.fillRect(i * barWidth, offset, 1, 2);
                 }
@@ -104,13 +105,19 @@ const SMOOTHING = 0.7;
                     drawC1.fillText(text, 0, gy);
                 }
 
+                let degree = 45;
                 // 周波数データ描画----------------------------------------------------------------------
-                for (let i = 0; i < analyser.frequencyBinCount; i++) {
+                for (let i = 0; i < afbc; i++) {
                     let value = freqs[i];
                     let percent = value / 256;
+                    // 音量（振幅）
                     let height = HEIGHT * percent;
+                    // 幅から周波数の幅を変更(FFTSIZEに依存)
+                    let barWidth = WIDTH/afbc;
+                    // 高さ始点
                     let offset = HEIGHT - height - 1;
-                    let barWidth = WIDTH/analyser.frequencyBinCount;
+                    offset -= (Math.abs(i-afbc/2) - afbc/2) + HEIGHT;
+                    // 色かな…？  
                     let hue = i/analyser.frequencyBinCount * 360;
                     drawC2.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
                     drawC2.fillRect(i * barWidth, offset, barWidth, height);

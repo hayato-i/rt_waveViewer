@@ -8,12 +8,7 @@ window.navigator.getUserMedia = navigator.getUserMedia       ||
 window.AudioContext = window.AudioContext       || 
                       window.webkitAudioContext;
 
-// canvasサイズの定義
-const WIDTH = 1000;
-const HEIGHT = 1000;
-
 var url = "/wav/2mix.wav";
-
 
 var getAudioBuffer = function(url, fn) {  
   var req = new XMLHttpRequest();
@@ -36,70 +31,24 @@ var getAudioBuffer = function(url, fn) {
   req.send('');
 };
 
-// globalアクセスのため
-var panner = context.createPanner();
-
-function forceDirection(pan, inRad){
-    //var rad = Math.PI / 180 * deg;
-    // 現在のpannerと見た目は座標が違う
-    var x = Math.cos(inRad);
-    var y = 0.0
-    var z = -Math.sin(inRad);
-    var dx = -x;
-    var dy = 0.0;
-    var dz = -z;
-    pan.setPosition(x,y,z);
-    pan.setOrientation(dx, dy, dz);
-}
-
 function audioInit(buffer){
         
         // PannerNode生成
-        // Class化の必要性あり
+        // 音源の増加によりClass化の必要性あり
         panner.panningModel = 'HRTF';
         panner.distanceModel = 'inverse';
-        panner.refDistance = 1;
-        panner.maxDistance = 10000;
-        panner.rolloffFactor = 1;
+        panner.refDistance = REF_DISTANCE;
+        panner.maxDistance = MAX_DISTANCE;
+        panner.rolloffFactor = ROLL_OFF_FACTOR;
         panner.coneInnerAngle = INNER_ANGLE;
         panner.coneOuterAngle = OUTER_ANGLE;
         panner.coneOuterGain = OUTER_GAIN;
 
-        if(panner.orientationX){
-            panner.orientationX.value = 0;
-            panner.orientationY.value = 0;
-            panner.orientationZ.value = 1;
-        }else{
-            panner.setOrientation(1,0,0);
-        }
-
-        if(panner.positionX) {
-            panner.positionX.value = sPosX;
-            panner.positionY.value = sPosY;
-            panner.positionZ.value = sPosZ;
-        } else {
-            panner.setPosition(sPosX,sPosY,sPosZ);
-        }
+        forceDirection(panner);
 
         // 今回リスナーの位置は動かさないものとするため素宣言
         var listener = context.listener;
-
-        if(listener.orientationX){
-            listener.forwordX.value = 0;
-            listener.forwordY.value = 0;
-            listener.forwordZ.value = -1;
-        }else{
-            listener.setOrientation(0,0,-1,0,1,0);
-        }
-
-        if(listener.orientationX){
-            listener.upX.value = 0;
-            listener.upY.value = 1;
-            listener.upZ.value = 0;
-        }else{
-            listener.setOrientation(0,0,-1,0,1,0);
-        }
-
+        console.log(listener);
         // buffer取得
         getAudioBuffer(url, function(buffer){   
             var src = context.createBufferSource();

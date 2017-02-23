@@ -1,23 +1,25 @@
 
-
 // AudioContext-------------------------------------------------------------------------------
 var context = new AudioContext();
 var destination = context.destination;
 var analyser = context.createAnalyser();
+// globalアクセスのため
+var panner = context.createPanner();
 
-// 音源位置（同心円状の角度）
+// 音源位置（同心円状の角度）default 90(=C)
 var SRC_POSITION = 90;
-var SOURCE_RARIDUS = (0.0, 0.0, -1.0);
 
 // Global Panner Nodeパラメータ
 var sPosX = 0;
 var sPosY = 0;
-var sPosZ = -10;
+var sPosZ = -1;
 var INNER_ANGLE = 0;
-var OUTER_ANGLE = 120;
+var OUTER_ANGLE = 45;
 var OUTER_GAIN = 0;
-var DIRECTION;
-
+var DISTANCE = 1;
+var REF_DISTANCE = 1;
+var MAX_DISTANCE = 10;
+var ROLL_OFF_FACTOR = 1;
 
 // canvas とクォータニオンをグローバルに扱う
 var mainc;
@@ -25,6 +27,19 @@ var q = new qtnIV();
 var qt = q.identity(q.create());
 var MOUSE_DOWN = true;
 
+function forceDirection(pan){
+    // 現在のviewerで示している座標系はxyだが、これはxz
+    var rad = SRC_POSITION * Math.PI / 180;
+    var x = Math.cos(rad) * DISTANCE;
+    var y = 0.0;
+    var z = (-1) * Math.sin(rad) * DISTANCE;
+    var dx = -1 * x;
+    var dy = 0.0;
+    var dz = -1 * z;
+    pan.setPosition(x, y, z);
+    pan.setOrientation(dx, dy, dz);
+    console.log(x,y,z,dx,dy,dz);
+}
 
 // マウスムーブイベントに登録する処理
 function mouseMove(e){
@@ -32,8 +47,9 @@ function mouseMove(e){
         var cw = mainc.width;
         var ch = mainc.height;
         var wh = 1 / Math.sqrt(cw * cw + ch * ch);
-        var x = 0;// = e.clientX - mainc.offsetLeft - cw * 0.5;
-        var y = e.clientY - mainc.offsetTop - ch * 0.5;
+        // 原点中央
+        var x = e.clientX - mainc.offsetLeft - cw * 0.5;
+        var y = 0;//e.clientY - mainc.offsetTop - ch * 0.5;
         var sq = Math.sqrt(x * x + y * y);
         var r = sq * 2.0 * Math.PI * wh;
         if(sq != 1){
@@ -41,7 +57,7 @@ function mouseMove(e){
             x *= sq;
             y *= sq;
         }
-        q.rotate(r, [y, x, 0.0], qt);
+        q.rotate(r, [0.0, 0.0, 1.0], qt);
     }
 }
 
@@ -101,12 +117,13 @@ function circle(num, r){
         var j = rad * i;
         x = r*Math.cos(j);
         y = r*Math.sin(j);
+        console.log("x: ",x,"y: ",y);
         z = 0.0;
         pos.push(x, y, z);
-		col.push(1.0, 1.0, 1.0, 1.0);
+		col.push(0.0, 0.7, 1.0, 1.0);
     }
     pos.push(0.0, 0.0, 0.0);
-	col.push(1.0, 1.0, 1.0, 1.0);
+	col.push(0.0, 0.7, 1.0, 1.0);
 
     for(i=0; i<num; i++){
         id.push(i);
