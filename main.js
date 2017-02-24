@@ -12,9 +12,9 @@ window.AudioContext = window.AudioContext       ||
 const WIDTH = 480;
 const HEIGHT = 256;
 
-// いろいろスムーズに描画するための設定　ちゃんと把握してね
-const FFTSIZE = 1024;
-const SMOOTHING = 0.7;
+// いろいろスムーズに描画するための設定
+const FFTSIZE = 512;
+const SMOOTHING = 0.9;
 (function(){
 
     window.addEventListener('load', function(){
@@ -116,10 +116,9 @@ const SMOOTHING = 0.7;
                     let barWidth = WIDTH/afbc;
                     // 高さ始点
                     let offset = HEIGHT - height - 1;
-                    offset -= (Math.abs(i-afbc/2) - afbc/2) + HEIGHT;
                     // 色かな…？  
                     let hue = i/analyser.frequencyBinCount * 360;
-                    drawC2.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+                    drawC2.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
                     drawC2.fillRect(i * barWidth, offset, barWidth, height);
                 }
             },1000/60);

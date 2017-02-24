@@ -1,13 +1,3 @@
-// Vender prefixes
-// WebRTC
-window.navigator.getUserMedia = navigator.getUserMedia       ||
-                                navigator.webkitGetUserMedia ||
-                                navigator.mozGetUserMedia;
-
-// WebAudio
-window.AudioContext = window.AudioContext       || 
-                      window.webkitAudioContext;
-
 var url = "/wav/2mix.wav";
 
 var getAudioBuffer = function(url, fn) {  
@@ -47,20 +37,49 @@ function audioInit(buffer){
         forceDirection(panner);
 
         // 今回リスナーの位置は動かさないものとするため素宣言
-        var listener = context.listener;
+        var listener = audioCont.listener;
         console.log(listener);
         // buffer取得
         getAudioBuffer(url, function(buffer){   
-            var src = context.createBufferSource();
-            var gain = context.createGain();
+            var src = audioCont.createBufferSource();
+            var gain = audioCont.createGain();
             gain.gain = 2.0;
             src.buffer = buffer;
-            src.connect(gain);
+            src.connect(analyser);
+            analyser.connect(gain);
             gain.connect(panner);
             panner.connect(destination);
-            //analyser.connect(destination);
             // 再生
             src.start(0);
         });
         
+}
+
+function freq(){
+    // analyser 設定
+    analyser.smoothingTimeConstant = SMOOTHING;
+    analyser.fftSize = FFTSIZE;
+    analyser.minDecibels = -140;
+    analyser.maxDecibels = -30;
+
+    var afbc = analyser.frequencyBinCount;
+    var freqs = new Uint8Array(afbc);
+    analyser.getByteFrequencyData(freqs); // Frequency Data
+
+    for (var i = 0; i < afbc; i++) {
+        var value = freqs[i];
+        var percent = value / 256;
+        // 音量（振幅）
+        var height = HEIGHT * percent;
+        // 幅から周波数の幅を変更(FFTSIZEに依存)
+        var barWidth = WIDTH/afbc;
+        // 高さ始点
+        var offset = HEIGHT - height - 1;
+        // 色かな…？  
+        var hue = i/analyser.frequencyBinCount * 360;
+        hidContext.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
+        hidContext.fillRect(i * barWidth, offset, barWidth, height);
+        freqDataArray = hidContext.getImageData(0, 0, hidCanvas.width, hidCanvas.height);
+    }
+
 }
