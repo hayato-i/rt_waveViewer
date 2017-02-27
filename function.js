@@ -5,6 +5,10 @@ var destination = audioCont.destination;
 var analyser = audioCont.createAnalyser();
 var panner = audioCont.createPanner();
 
+// カメラ位置
+var camDistance = 3.0;
+var camPos = [0.0, 0.0, camDistance];
+
 // 音源位置（同心円状の角度）default 90(=C)
 var SRC_POSITION = 90;
 var SRC_VAR = 10;
@@ -76,13 +80,13 @@ function mouseMove(e){
 }
 
 // X軸線
-function xAxis(){
+function xAxis(dist){
     var pos = new Array();
     var id = new Array();
     var col = new Array();
     pos = [
-        2.0, 0.0, 0.0,
-        -2.0, 0.0, 0.0 
+        dist, 0.0, 0.0,
+        -dist, 0.0, 0.0 
     ];
     id = [
         0,1
@@ -97,13 +101,13 @@ function xAxis(){
 
 
 // Y軸線
-function yAxis(){
+function yAxis(dist){
     var pos = new Array();
     var id = new Array();
     var col = new Array();
     pos = [
-        0.0, 2.0, 0.0,
-        0.0, -2.0, 0.0 
+        0.0, dist, 0.0,
+        0.0, -dist, 0.0 
     ];
     id = [
         0,1
@@ -183,21 +187,25 @@ function soundCone(degree, r){
     var id = new Array();
     var col = new Array();
     var x, y, z;
+	// 扇の開き
     var rad = degree/2 * Math.PI / 180;
+	var t = Math.tan(rad);
+    var posRad = SRC_POSITION * Math.PI / 180;
+    x = Math.cos(posRad);
+    y = Math.sin(posRad);
 
 	// 単位円における(0.0, 1.0, 0.0)を基本位置とする
 	// 発音点
-	pos.push(0.0, r, 0.0);
-	// 開きのx
-	var t = Math.tan(rad);
+	pos.push(x, y, 0.0);
     // X+
-	pos.push(t, 0.0, 0.0);
+	pos.push(t*r, 0.0, 0.0);
     // X-
-	pos.push(-t, 0.0, 0.0);
+	pos.push(-t*r, 0.0, 0.0);
 	// color
 	col.push(1.0, 1.0, 1.0, 1.0);
 	col.push(1.0, 1.0, 1.0, 1.0);
 	col.push(1.0, 1.0, 1.0, 1.0);
+    // 描画順
     id.push(1, 0, 2);
     
     return {p:pos, idx:id, c:col};
@@ -274,7 +282,7 @@ function create_program(vs, fs){
 }
 
 /**
- * VBOを生成する関数
+ * VBOを生成する関数(STATIC_DRAW)
  * @param {Array.<number>} data 頂点属性を格納した一次元配列
  * @return {object} 頂点バッファオブジェクト
  */
@@ -287,6 +295,28 @@ function create_vbo(data){
 	
 	// バッファにデータをセット
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+	
+	// バッファのバインドを無効化
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	
+	// 生成した VBO を返して終了
+	return vbo;
+}
+
+/**
+ * VBOを生成する関数(DYNAMIC_DRAW)
+ * @param {Array.<number>} data 頂点属性を格納した一次元配列
+ * @return {object} 頂点バッファオブジェクト
+ */
+function create_Dvbo(data){
+	// バッファオブジェクトの生成
+	var vbo = gl.createBuffer();
+	
+	// バッファをバインドする
+	gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+	
+	// バッファにデータをセット
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
 	
 	// バッファのバインドを無効化
 	gl.bindBuffer(gl.ARRAY_BUFFER, null);

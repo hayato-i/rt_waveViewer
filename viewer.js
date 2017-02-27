@@ -33,28 +33,6 @@ window.onload = function(){
 	hidc.height = 512;
 	hidContext = hidc.getContext("2d");
 
-	var posEve = document.getElementById('position');
-	var angleEve = document.getElementById('angle');
-	var sdEve = document.getElementById('sd');
-
-	posEve.addEventListener('change', function(e){
-		var evePos = e.currentTarget.value;
-		SRC_POSITION = evePos;
-		updatePanner(panner);
-	}, false);
-
-	angleEve.addEventListener('change', function(e){
-		var eveAngle = e.currentTarget.value; 
-		OUTER_ANGLE = eveAngle;
-		updatePanner(panner);
-	}, false);
-	
-	sdEve.addEventListener('change',function(e){
-		var eveSD = e.currentTarget.value;
-		DISTANCE = eveSD;
-		updatePanner(panner);
-	},false);
-
     // - シェーダとプログラムオブジェクトの初期化 ---------------------------------
 	// シェーダのソースを取得
 	vs = document.getElementById('vs').textContent;
@@ -81,12 +59,13 @@ window.onload = function(){
 	// Sound cone angle(動的に変更)-----------------------------------------------
 	var coneData = soundCone(OUTER_ANGLE, DISTANCE);
     var sPosition = coneData.p;
+	var sBufferPosition = new Float32Array(coneData.p);
 	var sColor = coneData.c;
     var sIndex = coneData.idx;
 
 	// VBOの生成
 	var coneVBO = [];
-    coneVBO[0] = create_vbo(sPosition);
+    coneVBO[0] = create_Dvbo(sBufferPosition);
 	coneVBO[1] = create_vbo(sColor);
 
 	// IBOの生成
@@ -107,7 +86,7 @@ window.onload = function(){
 	var cIbo = create_ibo(cIndex);
 
 	// X,Y axis--------------------------------------------------------------------
-	var xData = xAxis();
+	var xData = xAxis(DISTANCE*2);
 	var xPosition = xData.p;
 	var xColor = xData.c;
 	var xIndex = xData.idx;
@@ -118,7 +97,7 @@ window.onload = function(){
 
 	var xIbo = create_ibo(xIndex);
 
-	var yData = yAxis();
+	var yData = yAxis(DISTANCE*2);
 	var yPosition = yData.p;
 	var yColor = yData.c;
 	var yIndex = yData.idx;
@@ -153,8 +132,7 @@ window.onload = function(){
 
 
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
-	// カメラの座標
-	var camPosition = [0.0, 0.0, 3.0];
+	
 	
 	// カメラの上方向を表すベクトル
 	var camUpDirection = [0.0, 1.0, 0.0];
@@ -165,29 +143,67 @@ window.onload = function(){
 	// ブレンドファクター
 	gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
 
-	// ビュー×プロジェクション座標変換行列
-	m.lookAt(camPosition, [0, 0, 0], camUpDirection, vMatrix);
-	m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
-	m.multiply(pMatrix, vMatrix, vpMatrix);
-
 	// アニメーション用変数設定
-	var count = 0;
 	var run = true;
+	var camPosition;
+
+	// event -------------------------------------------------------------------
+	var posEve = document.getElementById('position');
+	var angleEve = document.getElementById('angle');
+	var sdEve = document.getElementById('sd');
+	var camEve = document.getElementById('cd');
+
+	posEve.addEventListener('change', function(e){
+		var evePos = e.currentTarget.value;
+		SRC_POSITION = evePos;
+		updatePanner(panner);
+		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
+		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	}, false);
+
+	angleEve.addEventListener('change', function(e){
+		var eveAngle = e.currentTarget.value; 
+		OUTER_ANGLE = eveAngle;
+		updatePanner(panner);
+		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
+		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	}, false);
+	
+	sdEve.addEventListener('change',function(e){
+		var eveSD = e.currentTarget.value;
+		DISTANCE = eveSD;
+		updatePanner(panner);
+		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
+		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	},false);
+
+	camEve.addEventListener('change',function(e){
+		var eveCD = e.currentTarget.value;
+		camDistance = eveCD;
+	}, false);
+
 
 	render();
-	
 
 	function render(){
-		
+		// カメラの座標
+		camPosition = camPos;
+		// ビュー×プロジェクション座標変換行列
+		m.lookAt(camPosition, [0, 0, 0], camUpDirection, vMatrix);
+		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
+		m.multiply(pMatrix, vMatrix, vpMatrix);
+
 		freq();	
 		// canvasを初期化--------------------------------------------------------
 		// canvasを初期化
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
-
-		// アニメーション用のカウンタからラジアンを計算
-		count++;
-		var rad = (count % 360) * Math.PI / 180;
 
 		// クォータニオンを行列に適用
 		var qMatrix = m.identity(m.create());
@@ -196,10 +212,10 @@ window.onload = function(){
 		/*-----------------------------------------------------------------------
 		 Cone:モデル変換座標行列
 		-----------------------------------------------------------------------*/
+
 		m.identity(mMatrix);
 		m.multiply(mMatrix, qMatrix, mMatrix);
 		//m.rotate(mMatrix, 90, [0, 0, 1], mMatrix);
-		m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -237,7 +253,7 @@ window.onload = function(){
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
 		set_attribute(circleVBO, attLocation, attStride);
-		
+
 		// IBOをバインド
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cIbo);
 
