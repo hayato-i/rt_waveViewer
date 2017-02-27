@@ -7,24 +7,11 @@ body {
     display: inline;
 }
 
-#delay_b{
-    border: 0px;
-    width:102px;
-    height:24px;
-    background: url(./img/delayOff.png) no-repeat;
-}
- 
-#delay_b:hover{
-    cursor: pointer;
-    opacity:0.5;
-}
-
-
-canvas {
-    background-color:black;
-    border: 3px #999999 solid;
+#main{
+    position: absolute;
 }
 
 #freq{
-    position:relative;
+    position: absolute;
+    
 }

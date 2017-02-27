@@ -9,7 +9,7 @@ var getAudioBuffer = function(url, fn) {
     if (req.readyState === 4) {
       if (req.status === 0 || req.status === 200) {
         // array buffer を audio buffer に変換
-        context.decodeAudioData(req.response, function(buffer) {
+        audioCont.decodeAudioData(req.response, function(buffer) {
           // コールバックを実行
           fn(buffer);
         });
@@ -70,16 +70,16 @@ function freq(){
         var value = freqs[i];
         var percent = value / 256;
         // 音量（振幅）
-        var height = HEIGHT * percent;
+        var height = hidc.height * percent;
         // 幅から周波数の幅を変更(FFTSIZEに依存)
-        var barWidth = WIDTH/afbc;
+        var barWidth = hidc.width/afbc;
         // 高さ始点
-        var offset = HEIGHT - height - 1;
-        // 色かな…？  
+        var offset = hidc.height - height - 1;
+        // 色かな… 
         var hue = i/analyser.frequencyBinCount * 360;
         hidContext.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
         hidContext.fillRect(i * barWidth, offset, barWidth, height);
-        freqDataArray = hidContext.getImageData(0, 0, hidCanvas.width, hidCanvas.height);
+        freqDataArray = hidContext.getImageData(0, 0, hidc.width, hidc.height);
     }
 
 }

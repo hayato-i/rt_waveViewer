@@ -22,19 +22,11 @@ var ROLL_OFF_FACTOR = 1;
 
 // main canvas 
 var gl, vs, fs;
-var mainc;
-mainc = document.getElementById('main');
-mainc.width = 800;
-mainc.height = 600;
-gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
+var mainc, hidc;
 
 // hidden canvas
-const FFTSIZE = 1024;
+const FFTSIZE = 512;
 const SMOOTHING = 0.7;
-var hidCanvas = document.getElementById('freq');
-var hidContext = hidCanvas.getContext("2d");
-canvas2.width = 480;
-canvas2.height = 512;
 
 // quatanion
 var q = new qtnIV();
@@ -116,6 +108,92 @@ function yAxis(){
     return {p:pos, idx:id, c:col};
 }
 
+
+/*---------------------------------------------------------  
+	Circle関数
+	num:分割数
+	r:半径
+---------------------------------------------------------*/
+function circle(num, r){
+    var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    var x, y, z;
+    var t = 360 / num;
+    var rad = t * Math.PI / 180;
+    for(var i = 0; i < num; i++){
+        var j = rad * i;
+        x = r*Math.cos(j);
+        y = r*Math.sin(j);
+        console.log("x: ",x,"y: ",y);
+        z = 0.0;
+        pos.push(x, y, z);
+		col.push(0.0, 0.7, 1.0, 1.0);
+    }
+    pos.push(0.0, 0.0, 0.0);
+	col.push(0.0, 0.7, 1.0, 1.0);
+
+    for(i=0; i<num; i++){
+        id.push(i);
+    }
+	id.push(0);
+
+    return {p:pos, idx:id, c:col};
+}
+
+function sphere(num, col, row, r){
+	var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    var x, y, z;
+    var t = 360 / num;
+    var rad = t * Math.PI / 180;
+    for(var i = 0; i < num; i++){
+        var k = rad * i;
+        x = Math.cos(k);
+        y = Math.sin(k);
+        z = 0.0;
+        pos.push(x, y, z);
+    }
+    pos.push(0.0, 0.0, 0.0);
+
+    for(i=0; i<num-1; i++){
+        id.push(num, i, i+1);
+    }
+    id.push(num, num-1, 0);
+
+    return {p:pos, idx:id, c:col};
+}
+
+/*---------------------------------------------------------  
+	Cone関数
+	degree:innerAngle
+	r:距離
+---------------------------------------------------------*/
+function soundCone(degree, r){
+	var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    var x, y, z;
+    var rad = degree/2 * Math.PI / 180;
+
+	// 単位円における(0.0, 1.0, 0.0)を基本位置とする
+	// 発音点
+	pos.push(0.0, r, 0.0);
+	// 開きのx
+	var t = Math.tan(rad);
+    // X+
+	pos.push(t, 0.0, 0.0);
+    // X-
+	pos.push(-t, 0.0, 0.0);
+	// color
+	col.push(1.0, 1.0, 1.0, 1.0);
+	col.push(1.0, 1.0, 1.0, 1.0);
+	col.push(1.0, 1.0, 1.0, 1.0);
+    id.push(1, 0, 2);
+    
+    return {p:pos, idx:id, c:col};
+}
 
 // - 各種ユーティリティ関数 ---------------------------------------------------
 /**
@@ -251,89 +329,3 @@ function set_attribute(vbo, attL, attS){
 	}
 }
 
-
-/*---------------------------------------------------------  
-	Circle関数
-	num:分割数
-	r:半径
----------------------------------------------------------*/
-function circle(num, r){
-    var pos = new Array();
-    var id = new Array();
-    var col = new Array();
-    var x, y, z;
-    var t = 360 / num;
-    var rad = t * Math.PI / 180;
-    for(var i = 0; i < num; i++){
-        var j = rad * i;
-        x = r*Math.cos(j);
-        y = r*Math.sin(j);
-        console.log("x: ",x,"y: ",y);
-        z = 0.0;
-        pos.push(x, y, z);
-		col.push(0.0, 0.7, 1.0, 1.0);
-    }
-    pos.push(0.0, 0.0, 0.0);
-	col.push(0.0, 0.7, 1.0, 1.0);
-
-    for(i=0; i<num; i++){
-        id.push(i);
-    }
-	id.push(0);
-
-    return {p:pos, idx:id, c:col};
-}
-
-function sphere(num, col, row, r){
-	var pos = new Array();
-    var id = new Array();
-    var col = new Array();
-    var x, y, z;
-    var t = 360 / num;
-    var rad = t * Math.PI / 180;
-    for(var i = 0; i < num; i++){
-        var k = rad * i;
-        x = Math.cos(k);
-        y = Math.sin(k);
-        z = 0.0;
-        pos.push(x, y, z);
-    }
-    pos.push(0.0, 0.0, 0.0);
-
-    for(i=0; i<num-1; i++){
-        id.push(num, i, i+1);
-    }
-    id.push(num, num-1, 0);
-
-    return {p:pos, idx:id, c:col};
-}
-
-/*---------------------------------------------------------  
-	Cone関数
-	degree:innerAngle
-	r:距離
----------------------------------------------------------*/
-function soundCone(degree, r){
-	var pos = new Array();
-    var id = new Array();
-    var col = new Array();
-    var x, y, z;
-    var rad = degree/2 * Math.PI / 180;
-
-	// 単位円における(0.0, 1.0, 0.0)を基本位置とする
-	// 発音点
-	pos.push(0.0, r, 0.0);
-	// 開きのx
-	var t = Math.tan(rad);
-    // X+
-	pos.push(t, 0.0, 0.0);
-    // X-
-	pos.push(-t, 0.0, 0.0);
-	// color
-	col.push(1.0, 1.0, 1.0, 1.0);
-	col.push(1.0, 1.0, 1.0, 1.0);
-	col.push(1.0, 1.0, 1.0, 1.0);
-    id.push(1, 0, 2);
-    
-    return {p:pos, idx:id, c:col};
-}

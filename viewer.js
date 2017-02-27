@@ -1,6 +1,5 @@
 window.onload = function(){
 	// eventとaudioのjavascript呼び出し
-	// ここをMainとする
 	audioInit();
     /***************************************************************************
     *　ヴィジュアル面の実装にあたって、描画するものの目的/要件の洗い出し
@@ -23,8 +22,16 @@ window.onload = function(){
     *・球の描画
     *・円錐の描画
     ***************************************************************************/
-
-    
+	
+	mainc = document.getElementById('main');
+	gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
+	mainc.width = 800;
+	mainc.height = 600;
+	
+	hidc = document.getElementById('freq');
+	hidContext = hidc.getContext("2d");
+	//hidc.width = 800;
+	//hidc.height = 600;
 
     // - シェーダとプログラムオブジェクトの初期化 ---------------------------------
 	// シェーダのソースを取得
@@ -263,6 +270,8 @@ window.onload = function(){
 		gl.drawElements(gl.LINES, yIndex.length, gl.UNSIGNED_SHORT, 0);
 		// コンテキストの再描画
 		gl.flush();
+
+		//freq();
 
 		if(run){requestAnimationFrame(render);}
 	}
