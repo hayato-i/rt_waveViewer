@@ -17,31 +17,39 @@ var OUTER_ANGLE = 45;
 var OUTER_GAIN = 0;
 var DISTANCE = 1;
 var REF_DISTANCE = 1;
-var MAX_DISTANCE = 10;
+var MAX_DISTANCE = 50;
 var ROLL_OFF_FACTOR = 1;
 
 // main canvas 
 var gl, vs, fs;
 var mainc, hidc;
+var hidContext;
 
 // hidden canvas
-const FFTSIZE = 512;
-const SMOOTHING = 0.7;
+const FFTSIZE = 256;
+const SMOOTHING = 0.9;
+
+// analyser 設定
+analyser.smoothingTimeConstant = SMOOTHING;
+analyser.fftSize = FFTSIZE;
+analyser.minDecibels = -140;
+analyser.maxDecibels = -10;
 
 // quatanion
 var q = new qtnIV();
 var qt = q.identity(q.create());
 var MOUSE_DOWN = true;
 
-function forceDirection(pan){
+function updatePanner(pan){
     // 現在のviewerで示している座標系はxyだが、これはxz
     var rad = SRC_POSITION * Math.PI / 180;
+    pan.coneOuterAngle = OUTER_ANGLE;
     var x = Math.cos(rad) * DISTANCE;
     var y = 0.0;
     var z = (-1) * Math.sin(rad) * DISTANCE;
-    var dx = -1 * x;
+    var dx = -1 * x / DISTANCE;
     var dy = 0.0;
-    var dz = -1 * z;
+    var dz = -1 * z / DISTANCE;
     pan.setPosition(x, y, z);
     pan.setOrientation(dx, dy, dz);
     console.log(x,y,z,dx,dy,dz);

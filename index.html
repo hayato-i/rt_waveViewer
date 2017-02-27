@@ -41,10 +41,15 @@ void main(){
     </head>
     <body>
         <div>
-            <canvas id="freq" hidden="true"></canvas>
+            <canvas id="main"></canvas>
         </div>
         <div>
-            <canvas id="main"></canvas>
+            <canvas id="freq"></canvas>
+        </div>
+        <div id="control">
+            <p><label>Position(Center=90): </label><input type="range" id="position" value="90" max="360" min="0" step="10"></p>
+            <p><label>Sound Angle: </label><input type="range" id="angle" value="45" max="360" min="0" step="10"></p>
+            <p><label>Source Distance: </label><input type="form" id="sd" value="1" min="0" max="100" step="1"></p>
         </div>
     </body>
 </html>

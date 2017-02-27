@@ -34,7 +34,7 @@ function audioInit(buffer){
         panner.coneOuterAngle = OUTER_ANGLE;
         panner.coneOuterGain = OUTER_GAIN;
 
-        forceDirection(panner);
+        updatePanner(panner);
 
         // 今回リスナーの位置は動かさないものとするため素宣言
         var listener = audioCont.listener;
@@ -56,12 +56,8 @@ function audioInit(buffer){
 }
 
 function freq(){
-    // analyser 設定
-    analyser.smoothingTimeConstant = SMOOTHING;
-    analyser.fftSize = FFTSIZE;
-    analyser.minDecibels = -140;
-    analyser.maxDecibels = -30;
-
+    
+    hidContext.clearRect(0, 0, hidc.width, hidc.height);
     var afbc = analyser.frequencyBinCount;
     var freqs = new Uint8Array(afbc);
     analyser.getByteFrequencyData(freqs); // Frequency Data
@@ -79,7 +75,7 @@ function freq(){
         var hue = i/analyser.frequencyBinCount * 360;
         hidContext.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
         hidContext.fillRect(i * barWidth, offset, barWidth, height);
-        freqDataArray = hidContext.getImageData(0, 0, hidc.width, hidc.height);
+        //freqDataArray = hidContext.getImageData(0, 0, hidc.width, hidc.height);
     }
 
 }

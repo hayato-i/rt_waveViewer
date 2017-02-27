@@ -79,7 +79,6 @@ const SMOOTHING = 0.9;
 
                 analyser.getByteFrequencyData(freqs); // Frequency Data
                 analyser.getByteTimeDomainData(times); // Waveform Data
-                let width = Math.floor(1/freqs.length, 10);
 
 
                 // 音声波形描画--------------------------------------------------------------------------

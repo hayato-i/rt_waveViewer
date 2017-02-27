@@ -24,14 +24,36 @@ window.onload = function(){
     ***************************************************************************/
 	
 	mainc = document.getElementById('main');
+	mainc.width = 512;
+	mainc.height = 512;
 	gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
-	mainc.width = 800;
-	mainc.height = 600;
-	
+
 	hidc = document.getElementById('freq');
+	hidc.width = 512;
+	hidc.height = 512;
 	hidContext = hidc.getContext("2d");
-	//hidc.width = 800;
-	//hidc.height = 600;
+
+	var posEve = document.getElementById('position');
+	var angleEve = document.getElementById('angle');
+	var sdEve = document.getElementById('sd');
+
+	posEve.addEventListener('change', function(e){
+		var evePos = e.currentTarget.value;
+		SRC_POSITION = evePos;
+		updatePanner(panner);
+	}, false);
+
+	angleEve.addEventListener('change', function(e){
+		var eveAngle = e.currentTarget.value; 
+		OUTER_ANGLE = eveAngle;
+		updatePanner(panner);
+	}, false);
+	
+	sdEve.addEventListener('change',function(e){
+		var eveSD = e.currentTarget.value;
+		DISTANCE = eveSD;
+		updatePanner(panner);
+	},false);
 
     // - シェーダとプログラムオブジェクトの初期化 ---------------------------------
 	// シェーダのソースを取得
@@ -56,7 +78,7 @@ window.onload = function(){
     attStride[0] = 3;
 	attStride[1] = 4;
 
-	// Sound cone----------------------------------------------------------------
+	// Sound cone angle(動的に変更)-----------------------------------------------
 	var coneData = soundCone(OUTER_ANGLE, DISTANCE);
     var sPosition = coneData.p;
 	var sColor = coneData.c;
@@ -70,7 +92,7 @@ window.onload = function(){
 	// IBOの生成
     var sIbo = create_ibo(sIndex);
 
-	// Circle---------------------------------------------------------------------
+	// Sounde Source Circle(動的に変更)--------------------------------------------
 	var circleData = circle(36, DISTANCE);
 	var cPosition = circleData.p;
 	var cColor = circleData.c;
@@ -153,11 +175,12 @@ window.onload = function(){
 	var run = true;
 
 	render();
+	
 
 	function render(){
-
-		// canvasを初期化--------------------------------------------------------
 		
+		freq();	
+		// canvasを初期化--------------------------------------------------------
 		// canvasを初期化
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
@@ -270,8 +293,6 @@ window.onload = function(){
 		gl.drawElements(gl.LINES, yIndex.length, gl.UNSIGNED_SHORT, 0);
 		// コンテキストの再描画
 		gl.flush();
-
-		//freq();
 
 		if(run){requestAnimationFrame(render);}
 	}
