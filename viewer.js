@@ -74,19 +74,20 @@ window.onload = function(){
 	// Sounde Source Circle(動的に変更)--------------------------------------------
 	var circleData = circle(36, DISTANCE);
 	var cPosition = circleData.p;
+	var cBufferPosition = new Float32Array(cPosition);
 	var cColor = circleData.c;
 	var cIndex = circleData.idx;
 
 	// VBOの生成
 	var circleVBO = [];
-    circleVBO[0] = create_vbo(cPosition);
+    circleVBO[0] = create_Dvbo(cPosition);
 	circleVBO[1] = create_vbo(cColor);
 
 	// IBOの生成
 	var cIbo = create_ibo(cIndex);
 
 	// X,Y axis--------------------------------------------------------------------
-	var xData = xAxis(DISTANCE*2);
+	var xData = xAxis(10);
 	var xPosition = xData.p;
 	var xColor = xData.c;
 	var xIndex = xData.idx;
@@ -97,7 +98,7 @@ window.onload = function(){
 
 	var xIbo = create_ibo(xIndex);
 
-	var yData = yAxis(DISTANCE*2);
+	var yData = yAxis(10);
 	var yPosition = yData.p;
 	var yColor = yData.c;
 	var yIndex = yData.idx;
@@ -132,8 +133,6 @@ window.onload = function(){
 
 
 	// - レンダリングのための WebGL 初期化設定 ------------------------------------
-	
-	
 	// カメラの上方向を表すベクトル
 	var camUpDirection = [0.0, 1.0, 0.0];
 	
@@ -145,7 +144,7 @@ window.onload = function(){
 
 	// アニメーション用変数設定
 	var run = true;
-	var camPosition;
+	var camPosition = camPos;
 
 	// event -------------------------------------------------------------------
 	var posEve = document.getElementById('position');
@@ -177,6 +176,10 @@ window.onload = function(){
 		var eveSD = e.currentTarget.value;
 		DISTANCE = eveSD;
 		updatePanner(panner);
+		gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO[0]);
+		cBufferPosition = new Float32Array(circle(36, DISTANCE).p);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, cBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
@@ -185,15 +188,37 @@ window.onload = function(){
 
 	camEve.addEventListener('change',function(e){
 		var eveCD = e.currentTarget.value;
-		camDistance = eveCD;
+		camPosition = [0, 0, eveCD];
 	}, false);
 
+	window.addEventListener('keydown',function(e){
+		var key = e.keyCode;
+		var d = 0.1;
+		// WASD
+		if(key === 87){
+			LZ -= d;
+		}else if(key === 65){
+			LX -= d;
+		}else if(key === 83){
+			LZ += d;
+		}else if(key === 68){
+			LX += d;
+		}
+		gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO[0]);
+		listener.setPosition(LX, LY, LZ);
+		var i = 36 * 3;
+		cBufferPosition[i] = LX;
+		cBufferPosition[i+1] = -LZ;
+		cBufferPosition[i+2] = LY;
+		console.log(key,cBufferPosition[i], cBufferPosition[i+1], cBufferPosition[i+2]);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, cBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+	}, false);
 
 	render();
 
 	function render(){
 		// カメラの座標
-		camPosition = camPos;
 		// ビュー×プロジェクション座標変換行列
 		m.lookAt(camPosition, [0, 0, 0], camUpDirection, vMatrix);
 		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);

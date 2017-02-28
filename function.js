@@ -4,25 +4,29 @@ var audioCont = new AudioContext();
 var destination = audioCont.destination;
 var analyser = audioCont.createAnalyser();
 var panner = audioCont.createPanner();
+var listener = audioCont.listener;
 
 // カメラ位置
-var camDistance = 3.0;
-var camPos = [0.0, 0.0, camDistance];
+var camPos = [0.0, 0.0, 3.0];
 
 // 音源位置（同心円状の角度）default 90(=C)
 var SRC_POSITION = 90;
-var SRC_VAR = 10;
 // Panner Nodeパラメータ
 var sPosX = 0;
 var sPosY = 0;
-var sPosZ = -1;
+var sPosZ = -1; 
 var INNER_ANGLE = 0;
 var OUTER_ANGLE = 45;
 var OUTER_GAIN = 0;
 var DISTANCE = 1;
-var REF_DISTANCE = 1;
-var MAX_DISTANCE = 50;
+var REF_DISTANCE = 0.8;
+var MAX_DISTANCE = 30;
 var ROLL_OFF_FACTOR = 1;
+
+// Listner パラメータ
+var LX = 0.0;
+var LY = 0.0;
+var LZ = 0.0;
 
 // main canvas 
 var gl, vs, fs;
@@ -30,7 +34,7 @@ var mainc, hidc;
 var hidContext;
 
 // hidden canvas
-const FFTSIZE = 256;
+const FFTSIZE = 128;
 const SMOOTHING = 0.9;
 
 // analyser 設定
@@ -179,7 +183,7 @@ function sphere(num, col, row, r){
 
 /*---------------------------------------------------------  
 	Cone関数
-	degree:innerAngle
+	degree:coneOuterAngle
 	r:距離
 ---------------------------------------------------------*/
 function soundCone(degree, r){
@@ -188,19 +192,34 @@ function soundCone(degree, r){
     var col = new Array();
     var x, y, z;
 	// 扇の開き
-    var rad = degree/2 * Math.PI / 180;
-	var t = Math.tan(rad);
-    var posRad = SRC_POSITION * Math.PI / 180;
-    x = Math.cos(posRad);
-    y = Math.sin(posRad);
+    var rad = degree * Math.PI / 180;
+    // SRC_POSITIONの初期値は90度
+    var posRad = SRC_POSITION % 360 * Math.PI / 180;
+    x = Math.cos(posRad); // ≒ 0
+    y = Math.sin(posRad); // ≒ 1
+	
+    // 単位円における(0.0, 1.0, 0.0)を基本位置とする
+	// 発音点(距離倍)
+	pos.push(x*r, y*r, 0.0);
 
-	// 単位円における(0.0, 1.0, 0.0)を基本位置とする
-	// 発音点
-	pos.push(x, y, 0.0);
-    // X+
-	pos.push(t*r, 0.0, 0.0);
-    // X-
-	pos.push(-t*r, 0.0, 0.0);
+    // 発音点からみた単位円上のX+
+    // (0.0, 1.0, 0.0)からみて-y方向にdegree分開く
+    // = +xから-degree方向
+    var posRad2 = rad/2;
+    var t1x = (x - Math.cos(posRad + posRad2))* r;
+    var t1y = (y - Math.sin(posRad + posRad2))* r;
+    pos.push(t1x, t1y, 0.0);
+    console.log(t1x,t1y);
+    
+    // 発音点からみた単位円上のX-
+    // (0.0, 1.0, 0.0)からみて-y方向にdegree分開く
+    // = -xから+degree方向
+    var posRad3 = -rad/2;
+	var t2x = (x - Math.cos(posRad + posRad3))* r;
+    var t2y = (y - Math.sin(posRad + posRad3))* r;
+	pos.push(t2x, t2y, 0.0);
+    console.log(t2x,t2y);
+
 	// color
 	col.push(1.0, 1.0, 1.0, 1.0);
 	col.push(1.0, 1.0, 1.0, 1.0);

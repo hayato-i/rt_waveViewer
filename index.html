@@ -23,6 +23,7 @@ void main(){
 	gl_FragColor = color;
 }
 		</script>
+        <link rel="stylesheet" href="bootstrap.css">
         <link rel="stylesheet" href="style.css">
         
         <script id="pvs" type="hoge/vertex">
@@ -32,7 +33,6 @@ void main(){
         <script id="pfs" type="hoge/fragment">
         
         </script>
-        
         <script src="minMatrix.js"></script>
         <script src="function.js"></script>
         <script src="audio.js"></script>
@@ -42,15 +42,13 @@ void main(){
     <body>
         <div>
             <canvas id="main"></canvas>
-        </div>
-        <div>
             <canvas id="freq"></canvas>
         </div>
         <div id="control">
-            <p><label>Position(Center=90): </label><input type="range" id="position" value="90" max="360" min="0" step="10">
-            <output name="output">90</output></p>
+            <p><input type="button" class="btn" id="btn" value="Play"></p>
+            <p><label>Position(Center=90): </label><input type="range" id="position" value="90" max="360" min="0" step="10"></p>
             <p><label>Sound Angle: </label><input type="range" id="angle" value="45" max="360" min="0" step="10"></p>
-            <p><label>Source Distance: </label><input type="form" id="sd" value="1" min="0" max="100" step="1"></p>
+            <p><label>Source Distance: </label><input type="form" id="sd" value="1" min="0" max="30" step="0.1"></p>
             <p><label>Cam Range(Z): </label><input type="range" id="cd" value="3" min="3" max="30" step="1"></p>
         </div>
     </body>

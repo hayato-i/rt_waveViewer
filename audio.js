@@ -36,21 +36,18 @@ function audioInit(buffer){
 
         updatePanner(panner);
 
-        // 今回リスナーの位置は動かさないものとするため素宣言
-        var listener = audioCont.listener;
-        console.log(listener);
         // buffer取得
         getAudioBuffer(url, function(buffer){   
-            var src = audioCont.createBufferSource();
-            var gain = audioCont.createGain();
-            gain.gain = 2.0;
-            src.buffer = buffer;
-            src.connect(analyser);
-            analyser.connect(gain);
-            gain.connect(panner);
-            panner.connect(destination);
-            // 再生
-            src.start(0);
+            var btn = document.getElementById('btn');
+            btn.addEventListener('click', function() {
+              var src = audioCont.createBufferSource();
+              src.buffer = buffer;
+              src.connect(analyser);
+              analyser.connect(panner);
+              panner.connect(destination);
+              // 再生
+              src.start(0);
+            }, false);
         });
         
 }
