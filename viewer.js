@@ -203,14 +203,34 @@ window.onload = function(){
 			LZ += d;
 		}else if(key === 68){
 			LX += d;
+		}else if(key === 74){
+
+			console.log(listener);
+			var px = panner.positionX.value;
+			//var py = panner.positionY.value;
+			var pz = panner.positionZ.value;
+			var lx = listener.positionX.value;
+			//var ly = listener.positionY.value;
+			var lz = listener.positionZ.value;
+			var x = px - lx;
+			//var y = ly - py;
+			var z = pz - lz;
+			var len = Math.sqrt(x * x + z * z);
+			x /= len;
+			//ly /= len;
+			z /= len;
+			// リスナーは向きをorientationではなくforwordX,Y,Zとして持っていることに注意
+			listener.setOrientation(x, 0.0, z, 0.0, 1.0, 0.0);
+			console.log("Set listener orientation:", listener);
+			return;
 		}
 		gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO[0]);
 		listener.setPosition(LX, LY, LZ);
 		var i = 36 * 3;
+		// YとZが入れ替わっていることに注意。要修正
 		cBufferPosition[i] = LX;
 		cBufferPosition[i+1] = -LZ;
 		cBufferPosition[i+2] = LY;
-		console.log(key,cBufferPosition[i], cBufferPosition[i+1], cBufferPosition[i+2]);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, cBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);

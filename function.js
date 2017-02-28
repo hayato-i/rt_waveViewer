@@ -15,11 +15,12 @@ var SRC_POSITION = 90;
 var sPosX = 0;
 var sPosY = 0;
 var sPosZ = -1; 
-var INNER_ANGLE = 0;
+// OUTER_ANGLE>INNER_ANGLE
+var INNER_ANGLE = 45;
 var OUTER_ANGLE = 45;
 var OUTER_GAIN = 0;
 var DISTANCE = 1;
-var REF_DISTANCE = 0.8;
+var REF_DISTANCE = 1.0;
 var MAX_DISTANCE = 30;
 var ROLL_OFF_FACTOR = 1;
 
@@ -60,7 +61,7 @@ function updatePanner(pan){
     var dz = -1 * z / DISTANCE;
     pan.setPosition(x, y, z);
     pan.setOrientation(dx, dy, dz);
-    console.log(x,y,z,dx,dy,dz);
+    //console.log(x,y,z,dx,dy,dz);
 }
 
 // マウスムーブイベントに登録する処理
