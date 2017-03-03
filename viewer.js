@@ -144,18 +144,35 @@ window.onload = function(){
 
 	// アニメーション用変数設定
 	var run = true;
+	var count = 0;
 	var camPosition = camPos;
 
 	// event -------------------------------------------------------------------
+	var devEve = document.getElementById('device');
+	var dmodelEve = document.getElementById('dmodel');
 	var posEve = document.getElementById('position');
 	var angleEve = document.getElementById('angle');
 	var sdEve = document.getElementById('sd');
 	var camEve = document.getElementById('cd');
 
+	devEve.addEventListener('change', function(e){
+		PANNING_MODEL = e.currentTarget.value;
+		updatePanner(panner);
+		console.log(PANNING_MODEL);
+	},false);
+
+	dmodelEve.addEventListener('change', function(e){
+		DISTANCE_MODEL = e.currentTarget.value;
+		updatePanner(panner);
+		console.log(DISTANCE_MODEL);
+	},false);
+
 	posEve.addEventListener('change', function(e){
 		var evePos = e.currentTarget.value;
 		SRC_POSITION = evePos;
+		document.getElementById('postext').textContent = evePos-90;
 		updatePanner(panner);
+		// coneVBOの更新
 		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
@@ -165,7 +182,9 @@ window.onload = function(){
 	angleEve.addEventListener('change', function(e){
 		var eveAngle = e.currentTarget.value; 
 		OUTER_ANGLE = eveAngle;
+		document.getElementById('iatext').textContent = eveAngle;
 		updatePanner(panner);
+		// coneVBOの更新
 		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
@@ -176,10 +195,12 @@ window.onload = function(){
 		var eveSD = e.currentTarget.value;
 		DISTANCE = eveSD;
 		updatePanner(panner);
+		// circleVBOの更新
 		gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO[0]);
 		cBufferPosition = new Float32Array(circle(36, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, cBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+		// coneVBOの更新
 		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
@@ -204,7 +225,6 @@ window.onload = function(){
 		}else if(key === 68){
 			LX += d;
 		}else if(key === 74){
-
 			console.log(listener);
 			var px = panner.positionX.value;
 			//var py = panner.positionY.value;
@@ -244,23 +264,23 @@ window.onload = function(){
 		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
 		m.multiply(pMatrix, vMatrix, vpMatrix);
 
+		count++;
+
+		var rad = count % 360 * Math.PI / 180;
+
 		freq();	
+
 		// canvasを初期化--------------------------------------------------------
-		// canvasを初期化
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
-		// クォータニオンを行列に適用
-		var qMatrix = m.identity(m.create());
-		q.toMatIV(qt, qMatrix);
 
 		/*-----------------------------------------------------------------------
 		 Cone:モデル変換座標行列
 		-----------------------------------------------------------------------*/
 
 		m.identity(mMatrix);
-		m.multiply(mMatrix, qMatrix, mMatrix);
-		//m.rotate(mMatrix, 90, [0, 0, 1], mMatrix);
+		m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -285,7 +305,6 @@ window.onload = function(){
 		 Circle:モデル変換座標行列
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
-		//m.multiply(mMatrix, qMatrix, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -310,7 +329,6 @@ window.onload = function(){
 		 XY Axis
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
-		//m.multiply(mMatrix, qMatrix, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -332,7 +350,6 @@ window.onload = function(){
 		gl.drawElements(gl.LINES, xIndex.length, gl.UNSIGNED_SHORT, 0);
 
 		m.identity(mMatrix);
-		//m.multiply(mMatrix, qMatrix, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 

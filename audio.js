@@ -25,8 +25,6 @@ function audioInit(buffer){
         
         // PannerNode生成
         // 音源の増加によりClass化の必要性あり
-        panner.panningModel = 'HRTF';
-        panner.distanceModel = 'inverse';
         panner.refDistance = REF_DISTANCE;
         panner.maxDistance = MAX_DISTANCE;
         panner.rolloffFactor = ROLL_OFF_FACTOR;
@@ -42,9 +40,9 @@ function audioInit(buffer){
             btn.addEventListener('click', function() {
               var src = audioCont.createBufferSource();
               src.buffer = buffer;
-              src.connect(analyser);
-              analyser.connect(panner);
-              panner.connect(destination);
+              src.connect(panner);
+              panner.connect(analyser);
+              analyser.connect(destination);
               // 再生
               src.start(0);
             }, false);
@@ -63,16 +61,15 @@ function freq(){
         var value = freqs[i];
         var percent = value / 256;
         // 音量（振幅）
-        var height = hidc.height * percent;
+        var width = hidc.width * percent;
         // 幅から周波数の幅を変更(FFTSIZEに依存)
-        var barWidth = hidc.width/afbc;
+        var barHeight = hidc.height/afbc;
         // 高さ始点
-        var offset = hidc.height - height - 1;
+        var offset = hidc.width - width - 1;
         // 色かな… 
         var hue = i/analyser.frequencyBinCount * 360;
         hidContext.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
-        hidContext.fillRect(i * barWidth, offset, barWidth, height);
+        hidContext.fillRect(offset ,i * barHeight, width, barHeight);
         //freqDataArray = hidContext.getImageData(0, 0, hidc.width, hidc.height);
     }
-
 }

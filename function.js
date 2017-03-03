@@ -15,16 +15,19 @@ var SRC_POSITION = 90;
 var sPosX = 0;
 var sPosY = 0;
 var sPosZ = -1; 
+
 // OUTER_ANGLE>INNER_ANGLE
-var INNER_ANGLE = 45;
+var INNER_ANGLE = 0;
 var OUTER_ANGLE = 45;
 var OUTER_GAIN = 0;
 var DISTANCE = 1;
-var REF_DISTANCE = 1.0;
+var REF_DISTANCE = 1;
 var MAX_DISTANCE = 30;
 var ROLL_OFF_FACTOR = 1;
+var PANNING_MODEL = 'HRTF';
+var DISTANCE_MODEL = 'linear';
 
-// Listner パラメータ
+// Listner position
 var LX = 0.0;
 var LY = 0.0;
 var LZ = 0.0;
@@ -44,15 +47,13 @@ analyser.fftSize = FFTSIZE;
 analyser.minDecibels = -140;
 analyser.maxDecibels = -10;
 
-// quatanion
-var q = new qtnIV();
-var qt = q.identity(q.create());
-var MOUSE_DOWN = true;
-
 function updatePanner(pan){
     // 現在のviewerで示している座標系はxyだが、これはxz
     var rad = SRC_POSITION * Math.PI / 180;
+    pan.coneInnerAngle = INNER_ANGLE;
     pan.coneOuterAngle = OUTER_ANGLE;
+    panner.panningModel = PANNING_MODEL;
+    panner.distanceModel = DISTANCE_MODEL;
     var x = Math.cos(rad) * DISTANCE;
     var y = 0.0;
     var z = (-1) * Math.sin(rad) * DISTANCE;
@@ -64,25 +65,6 @@ function updatePanner(pan){
     //console.log(x,y,z,dx,dy,dz);
 }
 
-// マウスムーブイベントに登録する処理
-function mouseMove(e){
-    if(MOUSE_DOWN){
-        var cw = mainc.width;
-        var ch = mainc.height;
-        var wh = 1 / Math.sqrt(cw * cw + ch * ch);
-        // 原点中央
-        var x = e.clientX - mainc.offsetLeft - cw * 0.5;
-        var y = 0;//e.clientY - mainc.offsetTop - ch * 0.5;
-        var sq = Math.sqrt(x * x + y * y);
-        var r = sq * 2.0 * Math.PI * wh;
-        if(sq != 1){
-            sq = 1 / sq;
-            x *= sq;
-            y *= sq;
-        }
-        q.rotate(r, [0.0, 0.0, 1.0], qt);
-    }
-}
 
 // X軸線
 function xAxis(dist){
@@ -125,6 +107,25 @@ function yAxis(dist){
     return {p:pos, idx:id, c:col};
 }
 
+// Z軸線
+function zAxis(dist){
+    var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    pos = [
+        0.0, 0.0, dist,
+        0.0, 0.0, -dist 
+    ];
+    id = [
+        0,1
+    ];
+    col = [
+        0.0, 0.0, 1.0, 1.0,
+        0.0, 0.0, 1.0, 1.0
+    ];
+
+    return {p:pos, idx:id, c:col};
+}
 
 /*---------------------------------------------------------  
 	Circle関数
@@ -148,7 +149,7 @@ function circle(num, r){
 		col.push(0.0, 0.7, 1.0, 1.0);
     }
     pos.push(0.0, 0.0, 0.0);
-	col.push(0.0, 0.7, 1.0, 1.0);
+	col.push(0.0, 0.7, 1.0, 0.7);
 
     for(i=0; i<num; i++){
         id.push(i);

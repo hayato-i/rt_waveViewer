@@ -10,3 +10,8 @@ body {
 .control{
   display: inline;
 }
+
+#postext, #iatext{
+  display:inline-block;
+  width: 40px;
+}
