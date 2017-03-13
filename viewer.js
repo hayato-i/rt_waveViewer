@@ -88,7 +88,7 @@ window.onload = function(){
 
 
 	// Frequency Circle(動的に変更)--------------------------------------------
-	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 4);
+	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 16);
 	var fPosition = freqData.p;
 	var fBufferPosition = new Float32Array(fPosition);
 	var fColor = freqData.c;
@@ -286,8 +286,9 @@ window.onload = function(){
 
 		var rad = count % 360 * Math.PI / 180;
 
-		freq();	
-
+		//freq();	
+		analyser.getByteFrequencyData(freqs);
+		
 		// canvasを初期化--------------------------------------------------------
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
@@ -336,7 +337,7 @@ window.onload = function(){
 			gl.uniform1f(uniLocation[3], pointSize);
 
 			// 再生中の差分を取得
-			freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 4);
+			freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 16);
 			/*
 			gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
 			fBufferPosition = new Float32Array(freqData.p);

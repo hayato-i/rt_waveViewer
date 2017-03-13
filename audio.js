@@ -44,8 +44,9 @@ function audioInit(buffer){
               panner.connect(analyser);
               analyser.connect(destination);
               // 再生
-              src.start(0);
               flags = true;
+              src.start(0);
+              src.onended = function(){flags = false;}
             }, false);
         });
 }

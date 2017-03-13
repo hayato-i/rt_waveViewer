@@ -22,7 +22,7 @@ var OUTER_ANGLE = 45;
 var OUTER_GAIN = 0;
 var DISTANCE = 1;
 var REF_DISTANCE = 1;
-var MAX_DISTANCE = 30;
+var MAX_DISTANCE = 3;
 var ROLL_OFF_FACTOR = 1;
 var PANNING_MODEL = 'HRTF';
 var DISTANCE_MODEL = 'linear';
@@ -40,12 +40,12 @@ var hidContext;
 
 // hidden canvas
 const FFTSIZE = 32;
-const SMOOTHING = 0.9;
+const SMOOTHING = 0.5;
 
 // analyser 設定
 analyser.smoothingTimeConstant = SMOOTHING;
 analyser.fftSize = FFTSIZE;
-analyser.minDecibels = -140;
+analyser.minDecibels = -130;
 analyser.maxDecibels = -10;
 var afbc = analyser.frequencyBinCount;
 var freqs = new Uint8Array(afbc);
@@ -281,24 +281,21 @@ function freqToCircle(degree, len, num){
         hue = i / afbc * 360;
         val = freqs[i] / 256;
         // 色変換
-        hueFunc = hsva(hue, sat,val, 0.7);
+        hueFunc = hsva(hue, sat, val, 0.7);
         r = hueFunc[0];
         g = hueFunc[1];
         b = hueFunc[2];
         a = hueFunc[3];
-
-        console.log(r,g,b,a);
         
         for(j = 0; j < num; j++){
             // 音源からの距離（原点から伸びていくイメージ）
             // 円を描くイメージではあるが、弧の伸び方は違う
-            var jx =  Math.cos(Math.PI / 180 * jrad * j);
-            var jz = -Math.sin(Math.PI / 180 * jrad * j);
+            var jx =  Math.cos(Math.PI / 180 * jrad * j) * ilength;
+            var jz = -Math.sin(Math.PI / 180 * jrad * j) * ilength;
             
             // x, z はその位置における開きの位置にある
             pos.push(jx, hz, jz);
             col.push(r, g, b, a);
-            console.log(r,g,b,a);
         }
     }
 
