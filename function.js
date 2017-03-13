@@ -147,7 +147,7 @@ function circle(num, r){
         var j = rad * i;
         x = r*Math.cos(j);
         y = r*Math.sin(j);
-        console.log("x: ",x,"y: ",y);
+        //console.log("x: ",x,"y: ",y);
         z = 0.0;
         pos.push(x, y, z);
 		col.push(0.0, 0.7, 1.0, 1.0);
@@ -215,7 +215,6 @@ function soundCone(degree, r){
     var t1x = (x - Math.cos(posRad + posRad2))* r;
     var t1y = (y - Math.sin(posRad + posRad2))* r;
     pos.push(t1x, t1y, 0.0);
-    console.log(t1x,t1y);
     
     // 発音点からみた単位円上のX-
     // (0.0, 1.0, 0.0)からみて-y方向にdegree分開く
@@ -224,7 +223,6 @@ function soundCone(degree, r){
 	var t2x = (x - Math.cos(posRad + posRad3))* r;
     var t2y = (y - Math.sin(posRad + posRad3))* r;
 	pos.push(t2x, t2y, 0.0);
-    console.log(t2x,t2y);
 
 	// color
 	col.push(1.0, 1.0, 1.0, 1.0);
@@ -237,7 +235,7 @@ function soundCone(degree, r){
 }
 
 // 音源到達距離、分割数が必要
-function freqToCircle(degree, r, num){
+function freqToCircle(degree, len, num){
     // 周波数領域で色分けしたサークル上の図形を表示する
     // 音源位置が0Hz, 最高距離が2kHz(サンプリング周波数/2)とする 
     // smoothingによって見た目が変わりそうなのでそこを見つつ適宜
@@ -257,56 +255,64 @@ function freqToCircle(degree, r, num){
     var x = Math.cos(posRad); // ≒ 0
     var y = Math.sin(posRad); // ≒ 1
     var z ;
+    // SRC_POSITIONからdegreeの半角開いたrの位置
+    var posRad2 = rad/2;
+    var t1x = (x - Math.cos(posRad + posRad2)) * len;
+    var t1z = (y - Math.sin(posRad + posRad2)) * len;
 
     // 周波数:分割数
     var hz;
-    var length;
-    var height;
+    var length = Math.sqrt(Math.pow(t1x-x,2)+Math.pow(t1z-y,2));
+    var ilength;
+
     // HSV
     var hue;
-    var sat = 100/100;
-    var val = 60/100;
+    var sat = 255/256;
+    var val = freqs[i]/256;
     var i, j, jx, jz;
 
     // Length/i = 周波数対位置
-    // 位置といろい情報
+    // 位置と色情報
     for(i = 0; i < afbc; i++){
-        // color
-        hue = i/afbc * 360;
-        
         // hzは距離の分割数に相当する。
-        hz = y * r - (y * r / afbc * i);
-        
+        hz = y - (y / afbc) * i;
+        ilength = length / afbc * i;
+        // color
+        hue = i / afbc * 360;
+        val = freqs[i] / 256;
         // 色変換
-        hueFunc = hsva(hue, sat, val, freqs[i]/256);
+        hueFunc = hsva(hue, sat,val, 0.7);
         r = hueFunc[0];
         g = hueFunc[1];
         b = hueFunc[2];
         a = hueFunc[3];
-            
+
+        console.log(r,g,b,a);
+        
         for(j = 0; j < num; j++){
             // 音源からの距離（原点から伸びていくイメージ）
             // 円を描くイメージではあるが、弧の伸び方は違う
-            var jx =  Math.cos(Math.PI / 180 * jrad * j) * hz;
-            var jz = -Math.sin(Math.PI / 180 * jrad * j) * hz;
+            var jx =  Math.cos(Math.PI / 180 * jrad * j);
+            var jz = -Math.sin(Math.PI / 180 * jrad * j);
             
             // x, z はその位置における開きの位置にある
             pos.push(jx, hz, jz);
             col.push(r, g, b, a);
+            console.log(r,g,b,a);
         }
     }
 
     // index（筒描画のインデックスは一度やったはずだが？）
-    for(i = 0; i < 4-1; i++){
+    // i = 距離の分割
+    for(i = 0; i < afbc-1; i++){
+        // j = 筒の分割
         for(j = 0; j < num-1; j++){
-            var k = i*num+j;
-            id.push(k,k+1,k+num+1);
-            id.push(k,k+num+1,k+num);
+            var k = i*num + j;
+            id.push(k, k+1, k+num+1, k, k+num+1, k+num);
         }
-        // if num = 4,j = 2
-        var l = i+1;
-        id.push(l*num-1, i*num, l*num);
-        id.push(l*num-1, l*num, l*num+num-1);
+        // 0 , 0+1, num+1, 0, num+1, num
+        var l = i*num;
+        id.push(l+num-1, l, l+num, l+num-1, l+num, l+num*2-1);
     }
 
     return {p:pos, idx:id, c:col};

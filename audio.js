@@ -69,7 +69,7 @@ function freq(){
         // 色かな… 
         var hue = i/afbc * 360;
         hidContext.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
-        hidContext.fillRect( i * barWidth,offset, barWidth, height);
+        hidContext.fillRect( i * barWidth, offset, barWidth, height);
         //freqDataArray = hidContext.getImageData(0, 0, hidc.width, hidc.height);
     }
 }
