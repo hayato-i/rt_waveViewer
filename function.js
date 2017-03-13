@@ -36,9 +36,10 @@ var LZ = 0.0;
 var gl, vs, fs;
 var mainc, hidc;
 var hidContext;
+//var ext = gl.getExtension('OES_element_index_uint');
 
 // hidden canvas
-const FFTSIZE = 128;
+const FFTSIZE = 32;
 const SMOOTHING = 0.9;
 
 // analyser 設定
@@ -46,6 +47,9 @@ analyser.smoothingTimeConstant = SMOOTHING;
 analyser.fftSize = FFTSIZE;
 analyser.minDecibels = -140;
 analyser.maxDecibels = -10;
+var afbc = analyser.frequencyBinCount;
+var freqs = new Uint8Array(afbc);
+var flags = false;
 
 function updatePanner(pan){
     // 現在のviewerで示している座標系はxyだが、これはxz
@@ -229,6 +233,82 @@ function soundCone(degree, r){
     // 描画順
     id.push(1, 0, 2);
     
+    return {p:pos, idx:id, c:col};
+}
+
+// 音源到達距離、分割数が必要
+function freqToCircle(degree, r, num){
+    // 周波数領域で色分けしたサークル上の図形を表示する
+    // 音源位置が0Hz, 最高距離が2kHz(サンプリング周波数/2)とする 
+    // smoothingによって見た目が変わりそうなのでそこを見つつ適宜
+    // 位置:距離を周波数分割数で割る。
+    // 　　 基本的な考え方は円柱を色で分けていた杉本さんのプログラムと同じはず
+    // 色  :freqで表現している色をそのまま活用
+    
+    var pos = new Array();
+    var id = new Array();
+    var col = new Array();
+    var hueFunc = new Array();
+    var r,g,b,a;
+    var rad = degree * Math.PI / 180;
+    var jrad = 360/num;
+    // SRC_POSITIONの初期値は90度
+    var posRad = SRC_POSITION % 360 * Math.PI / 180;
+    var x = Math.cos(posRad); // ≒ 0
+    var y = Math.sin(posRad); // ≒ 1
+    var z ;
+
+    // 周波数:分割数
+    var hz;
+    var length;
+    var height;
+    // HSV
+    var hue;
+    var sat = 100/100;
+    var val = 60/100;
+    var i, j, jx, jz;
+
+    // Length/i = 周波数対位置
+    // 位置といろい情報
+    for(i = 0; i < afbc; i++){
+        // color
+        hue = i/afbc * 360;
+        
+        // hzは距離の分割数に相当する。
+        hz = y * r - (y * r / afbc * i);
+        
+        // 色変換
+        hueFunc = hsva(hue, sat, val, freqs[i]/256);
+        r = hueFunc[0];
+        g = hueFunc[1];
+        b = hueFunc[2];
+        a = hueFunc[3];
+            
+        for(j = 0; j < num; j++){
+            // 音源からの距離（原点から伸びていくイメージ）
+            // 円を描くイメージではあるが、弧の伸び方は違う
+            var jx =  Math.cos(Math.PI / 180 * jrad * j) * hz;
+            var jz = -Math.sin(Math.PI / 180 * jrad * j) * hz;
+            
+            // x, z はその位置における開きの位置にある
+            pos.push(jx, hz, jz);
+            col.push(r, g, b, a);
+        }
+    }
+
+    // index（筒描画のインデックスは一度やったはずだが？）
+    for(i = 0; i < 4-1; i++){
+        for(j = 0; j < num-1; j++){
+            var k = i*num+j;
+            id.push(k,k+1,k+num+1);
+            id.push(k,k+num+1,k+num);
+        }
+        // if num = 4,j = 2
+        var l = i+1;
+        id.push(l*num-1, i*num, l*num);
+        id.push(l*num-1, l*num, l*num+num-1);
+    }
+
     return {p:pos, idx:id, c:col};
 }
 

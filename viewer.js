@@ -86,6 +86,24 @@ window.onload = function(){
 	// IBOの生成
 	var cIbo = create_ibo(cIndex);
 
+
+	// Frequency Circle(動的に変更)--------------------------------------------
+	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 4);
+	var fPosition = freqData.p;
+	var fBufferPosition = new Float32Array(fPosition);
+	var fColor = freqData.c;
+	var fBufferColor = new Float32Array(fColor);
+	var fIndex = freqData.idx;
+
+	// VBOの生成
+	var freqVBO = [];
+    freqVBO[0] = create_Dvbo(fPosition);
+	freqVBO[1] = create_Dvbo(fColor);
+
+	// IBOの生成
+	var fIbo = create_ibo(fIndex);
+
+
 	// X,Y axis--------------------------------------------------------------------
 	var xData = xAxis(10);
 	var xPosition = xData.p;
@@ -300,6 +318,47 @@ window.onload = function(){
 		// = レンダリング =========================================================
 		// モデルの描画
 		gl.drawElements(gl.LINE_STRIP, sIndex.length, gl.UNSIGNED_SHORT, 0);
+
+		/*-----------------------------------------------------------------------
+		 FrequencyCircle:モデル変換座標行列
+		-----------------------------------------------------------------------*/
+		if(flags === true){
+			
+			m.identity(mMatrix);
+			m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
+			m.multiply(vpMatrix, mMatrix, mvpMatrix);
+			m.inverse(mMatrix, invMatrix);
+
+			// uniformLocationへ登録
+			gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+			gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+			gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+			gl.uniform1f(uniLocation[3], pointSize);
+
+			// 再生中の差分を取得
+			freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 4);
+			/*
+			gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
+			fBufferPosition = new Float32Array(freqData.p);
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+			*/
+			gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[1]);
+			fBufferColor = new Float32Array(freqData.c);
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferColor);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+			//VBO,IBOのバインド
+			// VBOのバインドと登録
+			set_attribute(freqVBO, attLocation, attStride);
+			
+			// IBOをバインド
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, fIbo);
+			
+			// = レンダリング =========================================================
+			// モデルの描画
+			gl.drawElements(gl.TRIANGLES, fIndex.length, gl.UNSIGNED_SHORT, 0);
+		}
 
 		/*-----------------------------------------------------------------------
 		 Circle:モデル変換座標行列

@@ -35,7 +35,7 @@ function audioInit(buffer){
         updatePanner(panner);
 
         // buffer取得
-        getAudioBuffer(url, function(buffer){   
+        getAudioBuffer(url, function(buffer){ 
             var btn = document.getElementById('btn');
             btn.addEventListener('click', function() {
               var src = audioCont.createBufferSource();
@@ -45,31 +45,31 @@ function audioInit(buffer){
               analyser.connect(destination);
               // 再生
               src.start(0);
+              flags = true;
             }, false);
         });
-        
 }
+
+
 
 function freq(){
     
     hidContext.clearRect(0, 0, hidc.width, hidc.height);
-    var afbc = analyser.frequencyBinCount;
-    var freqs = new Uint8Array(afbc);
     analyser.getByteFrequencyData(freqs); // Frequency Data
 
     for (var i = 0; i < afbc; i++) {
         var value = freqs[i];
         var percent = value / 256;
         // 音量（振幅）
-        var width = hidc.width * percent;
+        var height = hidc.height * percent;
         // 幅から周波数の幅を変更(FFTSIZEに依存)
-        var barHeight = hidc.height/afbc;
+        var barWidth = hidc.width/afbc;
         // 高さ始点
-        var offset = hidc.width - width - 1;
+        var offset = hidc.height - height - 1;
         // 色かな… 
-        var hue = i/analyser.frequencyBinCount * 360;
+        var hue = i/afbc * 360;
         hidContext.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
-        hidContext.fillRect(offset ,i * barHeight, width, barHeight);
+        hidContext.fillRect( i * barWidth,offset, barWidth, height);
         //freqDataArray = hidContext.getImageData(0, 0, hidc.width, hidc.height);
     }
 }
