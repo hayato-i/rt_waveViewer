@@ -26,12 +26,7 @@ window.onload = function(){
 	mainc = document.getElementById('main');
 	mainc.width = 512;
 	mainc.height = 512;
-	gl = mainc.getContext('webgl') || c.getContext('experimental-webgl');
-
-	hidc = document.getElementById('freq');
-	hidc.width = 512;
-	hidc.height = 512;
-	hidContext = hidc.getContext("2d");
+	gl = mainc.getContext('webgl') || mainc.getContext('experimental-webgl');
 
     // - シェーダとプログラムオブジェクトの初期化 ---------------------------------
 	// シェーダのソースを取得
@@ -195,6 +190,11 @@ window.onload = function(){
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+		// freqVBOの更新(POSITION)
+		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).p);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
 
 	angleEve.addEventListener('change', function(e){
@@ -206,6 +206,11 @@ window.onload = function(){
 		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+		// freqVBOの更新(POSITION)
+		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).p);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
 	
@@ -222,6 +227,11 @@ window.onload = function(){
 		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+		// freqVBOの更新(POSITION)
+		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).p);
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	},false);
 
@@ -276,6 +286,7 @@ window.onload = function(){
 	render();
 
 	function render(){
+
 		// カメラの座標
 		// ビュー×プロジェクション座標変換行列
 		m.lookAt(camPosition, [0, 0, 0], camUpDirection, vMatrix);
@@ -286,9 +297,8 @@ window.onload = function(){
 
 		var rad = count % 360 * Math.PI / 180;
 
-		//freq();	
-		analyser.getByteFrequencyData(freqs);
 		
+
 		// canvasを初期化--------------------------------------------------------
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
@@ -299,7 +309,6 @@ window.onload = function(){
 		-----------------------------------------------------------------------*/
 
 		m.identity(mMatrix);
-		m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -324,9 +333,9 @@ window.onload = function(){
 		 FrequencyCircle:モデル変換座標行列
 		-----------------------------------------------------------------------*/
 		if(flags === true){
-			
+
+			analyser.getByteFrequencyData(freqs);
 			m.identity(mMatrix);
-			m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
 			m.multiply(vpMatrix, mMatrix, mvpMatrix);
 			m.inverse(mMatrix, invMatrix);
 
@@ -336,19 +345,12 @@ window.onload = function(){
 			gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
 			gl.uniform1f(uniLocation[3], pointSize);
 
-			// 再生中の差分を取得
-			freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 16);
-			/*
-			gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-			fBufferPosition = new Float32Array(freqData.p);
-			gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-			*/
+			// 再生中の色表示の差分を取得
 			gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[1]);
-			fBufferColor = new Float32Array(freqData.c);
+			fBufferColor = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).c);
 			gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferColor);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
+			
 			//VBO,IBOのバインド
 			// VBOのバインドと登録
 			set_attribute(freqVBO, attLocation, attStride);

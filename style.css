@@ -2,7 +2,13 @@ body {
   font-family: 'Open Sans', sans-serif;
   color: black;
 }
-
+.text {
+        position:absolute;
+        top:10px;
+        left:20px;
+        font-size:2em;
+        color: springgreen;
+}
 .btn{
     color: cadetblue;
 }
@@ -10,6 +16,7 @@ body {
 .control{
   display: inline;
 }
+
 
 #postext, #iatext{
   display:inline-block;

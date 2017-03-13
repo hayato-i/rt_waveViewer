@@ -234,12 +234,17 @@ function soundCone(degree, r){
 
 // 音源到達距離、分割数が必要
 function freqToCircle(degree, len, num){
-    // 周波数領域で色分けしたサークル上の図形を表示する
-    // 音源位置が0Hz, 最高距離が2kHz(サンプリング周波数/2)とする 
-    // smoothingによって見た目が変わりそうなのでそこを見つつ適宜
-    // 位置:距離を周波数分割数で割る。
-    // 　　 基本的な考え方は円柱を色で分けていた杉本さんのプログラムと同じはず
-    // 色  :freqで表現している色をそのまま活用
+    /******************************************************************************** 
+    周波数領域で色分けしたサークル上の図形を表示する
+    音源位置が0Hz, 最高距離が24kHz(サンプリング周波数/2)とする 
+    smoothingによって見た目が変わりそうなのでそこを見つつ適宜調整。
+    位置:距離を周波数分割数で割る。
+     　 基本的な考え方は円柱を色で分けていた杉本さんのプログラムと同じはず
+    色  :freqで表現している色をそのまま活用
+    20170313追記:
+    サウンドコーンの概念はやはり球面上に底面が接する丸みのあるコーンと認識しないと
+    表示がおかしいことになってしまった。
+    *******************************************************************************/　　　　　　
     
     var pos = new Array();
     var id = new Array();
@@ -263,7 +268,6 @@ function freqToCircle(degree, len, num){
 
     // 周波数:分割数
     var hz;
-    var length = Math.sqrt(Math.pow(t1x-x,2)+Math.pow(t1z-y,2));
     var ilength;
 
     // HSV
@@ -277,7 +281,7 @@ function freqToCircle(degree, len, num){
     for(i = 0; i < afbc; i++){
         // hzは距離の分割数に相当する。
         hz = y - (y / afbc) * i;
-        ilength = length / afbc * i;
+        ilength = len / afbc * i;
 
         // color
         hue = i / afbc * 360;
@@ -294,8 +298,8 @@ function freqToCircle(degree, len, num){
             // 円を描くイメージではあるが、弧の伸び方は違う
             var jx =  Math.cos(Math.PI / 180 * jrad * j);
             var jz = -Math.sin(Math.PI / 180 * jrad * j);
-            jx = jx * ilength;
-            jz = jz * ilength;
+            jx = jx * t1x * ilength;
+            jz = jz * t1z * ilength;
             // x, z はその位置における開きの位置にある
             pos.push(jx, hz, jz);
             col.push(r, g, b, a);

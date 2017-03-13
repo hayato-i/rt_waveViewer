@@ -51,26 +51,3 @@ function audioInit(buffer){
         });
 }
 
-
-
-function freq(){
-    
-    hidContext.clearRect(0, 0, hidc.width, hidc.height);
-    analyser.getByteFrequencyData(freqs); // Frequency Data
-
-    for (var i = 0; i < afbc; i++) {
-        var value = freqs[i];
-        var percent = value / 256;
-        // 音量（振幅）
-        var height = hidc.height * percent;
-        // 幅から周波数の幅を変更(FFTSIZEに依存)
-        var barWidth = hidc.width/afbc;
-        // 高さ始点
-        var offset = hidc.height - height - 1;
-        // 色かな… 
-        var hue = i/afbc * 360;
-        hidContext.fillStyle = 'hsl(' + hue + ', 100%, 60%)';
-        hidContext.fillRect( i * barWidth, offset, barWidth, height);
-        //freqDataArray = hidContext.getImageData(0, 0, hidc.width, hidc.height);
-    }
-}
