@@ -40,7 +40,7 @@ var hidContext;
 
 // hidden canvas
 const FFTSIZE = 32;
-const SMOOTHING = 0.5;
+const SMOOTHING = 0.7;
 
 // analyser 設定
 analyser.smoothingTimeConstant = SMOOTHING;
@@ -69,7 +69,6 @@ function updatePanner(pan){
     //console.log(x,y,z,dx,dy,dz);
 }
 
-
 // X軸線
 function xAxis(dist){
     var pos = new Array();
@@ -89,7 +88,6 @@ function xAxis(dist){
 
     return {p:pos, idx:id, c:col};
 }
-
 
 // Y軸線
 function yAxis(dist){
@@ -248,17 +246,20 @@ function freqToCircle(degree, len, num){
     var col = new Array();
     var hueFunc = new Array();
     var r,g,b,a;
+
     var rad = degree * Math.PI / 180;
     var jrad = 360/num;
+
     // SRC_POSITIONの初期値は90度
     var posRad = SRC_POSITION % 360 * Math.PI / 180;
     var x = Math.cos(posRad); // ≒ 0
     var y = Math.sin(posRad); // ≒ 1
     var z ;
-    // SRC_POSITIONからdegreeの半角開いたrの位置
+
+    // SRC_POSITIONからdegreeの半角開いたlenの位置
     var posRad2 = rad/2;
-    var t1x = (x - Math.cos(posRad + posRad2)) * len;
-    var t1z = (y - Math.sin(posRad + posRad2)) * len;
+    var t1x = (x - Math.cos(posRad - posRad2)) * len;
+    var t1z = (y - Math.sin(posRad - posRad2)) * len;
 
     // 周波数:分割数
     var hz;
@@ -277,11 +278,12 @@ function freqToCircle(degree, len, num){
         // hzは距離の分割数に相当する。
         hz = y - (y / afbc) * i;
         ilength = length / afbc * i;
+
         // color
         hue = i / afbc * 360;
         val = freqs[i] / 256;
         // 色変換
-        hueFunc = hsva(hue, sat, val, 0.7);
+        hueFunc = hsva(hue, sat, val, 0.8);
         r = hueFunc[0];
         g = hueFunc[1];
         b = hueFunc[2];
@@ -290,9 +292,10 @@ function freqToCircle(degree, len, num){
         for(j = 0; j < num; j++){
             // 音源からの距離（原点から伸びていくイメージ）
             // 円を描くイメージではあるが、弧の伸び方は違う
-            var jx =  Math.cos(Math.PI / 180 * jrad * j) * ilength;
-            var jz = -Math.sin(Math.PI / 180 * jrad * j) * ilength;
-            
+            var jx =  Math.cos(Math.PI / 180 * jrad * j);
+            var jz = -Math.sin(Math.PI / 180 * jrad * j);
+            jx = jx * ilength;
+            jz = jz * ilength;
             // x, z はその位置における開きの位置にある
             pos.push(jx, hz, jz);
             col.push(r, g, b, a);
