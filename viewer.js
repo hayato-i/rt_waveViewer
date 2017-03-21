@@ -24,8 +24,8 @@ window.onload = function(){
     ***************************************************************************/
 	
 	mainc = document.getElementById('main');
-	mainc.width = 512;
-	mainc.height = 512;
+	mainc.width = 1200;
+	mainc.height = 1200;
 	gl = mainc.getContext('webgl') || mainc.getContext('experimental-webgl');
 
     // - シェーダとプログラムオブジェクトの初期化 ---------------------------------
@@ -83,7 +83,7 @@ window.onload = function(){
 
 
 	// Frequency Circle(動的に変更)--------------------------------------------
-	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 16);
+	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 4);
 	var fPosition = freqData.p;
 	var fBufferPosition = new Float32Array(fPosition);
 	var fColor = freqData.c;
@@ -130,7 +130,7 @@ window.onload = function(){
 	uniLocation[2] = gl.getUniformLocation(prg, 'invMatrix');
 	uniLocation[3] = gl.getUniformLocation(prg, 'pointSize');
 	
-	var pointSize = 8;
+	var pointSize = 16;
 
 	// - 行列の初期化 -------------------------------------------------------------
 	// minMatrix.js を用いた行列関連処理
@@ -192,7 +192,7 @@ window.onload = function(){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 		// freqVBOの更新(POSITION)
 		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).p);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
@@ -209,7 +209,7 @@ window.onload = function(){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 		// freqVBOの更新(POSITION)
 		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).p);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
@@ -230,7 +230,7 @@ window.onload = function(){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 		// freqVBOの更新(POSITION)
 		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).p);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	},false);
@@ -242,7 +242,7 @@ window.onload = function(){
 
 	window.addEventListener('keydown',function(e){
 		var key = e.keyCode;
-		var d = 0.1;
+		var d = 0.05;
 		// WASD
 		if(key === 87){
 			LZ -= d;
@@ -347,7 +347,7 @@ window.onload = function(){
 
 			// 再生中の色表示の差分を取得
 			gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[1]);
-			fBufferColor = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 16).c);
+			fBufferColor = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).c);
 			gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferColor);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 			

@@ -1,5 +1,3 @@
-var url = "/wav/2mix.wav";
-
 var getAudioBuffer = function(url, fn) {  
   var req = new XMLHttpRequest();
   // array buffer を指定
@@ -20,6 +18,24 @@ var getAudioBuffer = function(url, fn) {
   req.open('GET', url, true);
   req.send('');
 };
+
+function updatePanner(pan){
+    // 現在のviewerで示している座標系はxyだが、これはxz
+    var rad = SRC_POSITION * Math.PI / 180;
+    pan.coneInnerAngle = INNER_ANGLE;
+    pan.coneOuterAngle = OUTER_ANGLE;
+    panner.panningModel = PANNING_MODEL;
+    panner.distanceModel = DISTANCE_MODEL;
+    var x = Math.cos(rad) * DISTANCE;
+    var y = 0.0;
+    var z = (-1) * Math.sin(rad) * DISTANCE;
+    var dx = -1 * x / DISTANCE;
+    var dy = 0.0;
+    var dz = -1 * z / DISTANCE;
+    pan.setPosition(x, y, z);
+    pan.setOrientation(dx, dy, dz);
+    //console.log(x,y,z,dx,dy,dz);
+}
 
 function audioInit(buffer){
         
