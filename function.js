@@ -203,7 +203,9 @@ function freqToCircle(degree, len, num){
         サウンドコーンの概念は球欠でないと解決しない。
         表示がおかしいことになってしまった。
         soundOuterAngle=360
-        ->のとき球となる
+        20170321追記:
+        極座標系を扱わないとY軸の計算が合わない。
+        1frameずつconsoleに出してみる。
     *******************************************************************************/　　　　　　
     
     var pos = new Array();
@@ -213,18 +215,19 @@ function freqToCircle(degree, len, num){
     var r,g,b,a;
 
     var rad = degree * Math.PI / 180;
-    var halfrad = rad/2
     var jrad = 360/num;
 
     // SRC_POSITIONの初期値は90度
     var posRad = SRC_POSITION % 360 * Math.PI / 180;
-    var x = Math.cos(posRad) * len; // ≒ 0
-    var y = Math.sin(posRad) * len; // ≒ 1
-    var z ;
+    var x = len * Math.cos(posRad) * Math.cos(0); // ≒ 0
+    var y = len * Math.sin(posRad); // ≒ 1
+    var z = len * Math.cos(posRad) * Math.sin(0);
 
-    // SRC_POSITIONからdegreeの半角開いたlenの位置
-    var t1x = (x - Math.cos(posRad - halfrad)) * len;
-    var t1z = (y - Math.sin(posRad - halfrad)) * len;
+    // SRC_POSITIONから180-degreeの開いたlenの位置
+    var posRad2 = ((180 - degree) * Math.PI /180)/2;
+    var t1x = len * Math.cos(posRad2) * Math.cos(0);
+    var t1y = len * Math.sin(posRad2);
+    var t1z = len * Math.cos(posRad2) * Math.sin(0);
 
     // 周波数:分割数
     var hz;
@@ -233,18 +236,18 @@ function freqToCircle(degree, len, num){
     // HSV
     var hue;
     var sat = 1;
-    var val = freqs[i]/256;
+    var val = freqs[i] / 256;
     var i, j, jx, jz;
     
     // Length/i = 周波数対位置
     // 位置と色情報
     for(i = 0; i < afbc; i++){
         // hzは距離の分割数に相当する。
-        hz = y - (y / afbc) * i;
-        ilength = len / afbc * i;
+        hz = t1y - (t1y / (afbc - 1)) * i;
+        ilength = len / (afbc - 1) * i;
 
         // color
-        hue = i / afbc * 360;
+        hue = i / (afbc-1) * 360;
         val = freqs[i] / 256;
 
         // 色変換
@@ -260,13 +263,13 @@ function freqToCircle(degree, len, num){
             var jx =  Math.cos(Math.PI / 180 * jrad * j);
             var jz = -Math.sin(Math.PI / 180 * jrad * j);
             jx = jx * t1x * ilength;
-            jz = jz * t1z * ilength;
+            jz = jz * t1y * ilength;
+
             // x, z はその位置における開きの位置にある
             pos.push(jx, hz, jz);
             col.push(r, g, b, a);
         }
     }
-
 
     // index（筒描画のインデックスは一度やったはずだが？）
     // i = 距離の分割
