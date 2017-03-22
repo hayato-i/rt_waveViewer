@@ -199,7 +199,7 @@ function freqToCircle(degree, len, num){
     // x -> z, y -> x, z -> y
 
     var t1x = len * (x - Math.cos(posRad + posRad2));
-    var t1y = len;
+    var t1y = len * (y - Math.cos(posRad + posRad2));
     var t1z = len * (z + Math.sin(posRad + posRad2));
 
     // 周波数:分割数 
@@ -235,7 +235,7 @@ function freqToCircle(degree, len, num){
             // 極座標系でのプロット
             jx =  ilength * t1x * Math.cos(jrad * j);
             jy =  ilength * t1y * Math.sin(jrad * j);
-            jz =  ilength * t1z * hz;
+            jz =  ilength * t1z + hz;
             
             // x, z はその位置における開きの位置にある
             pos.push(jx, jy, jz);

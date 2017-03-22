@@ -62,7 +62,6 @@ function audioInit(buffer){
               // 再生
               flags = true;
               src.start(0);
-              src.onended = function(){flags = false;}
             }, false);
         });
 }
