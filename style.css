@@ -2,19 +2,41 @@ body {
   font-family: 'Open Sans', sans-serif;
   color: black;
 }
-.text {
+.xy {
         position:absolute;
         top:10px;
         left:20px;
         font-size:2em;
         color: springgreen;
 }
+
+.xz {
+        position:absolute;
+        top:610px;
+        left:20px;
+        font-size:2em;
+        color: springgreen;
+}
+
+.yz {
+        position:absolute;
+        top:10px;
+        left:620px;
+        font-size:2em;
+        color: springgreen;
+}
+
 .btn{
     color: cadetblue;
 }
 
 .control{
+  position:absolute;
+  top:610px;
+  left:620px;
   display: inline;
+  color : #888888;
+  background: #262626;
 }
 
 

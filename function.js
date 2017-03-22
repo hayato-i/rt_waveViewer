@@ -8,7 +8,12 @@ var listener = audioCont.listener;
 var url = "/wav/2mix.wav";
 
 // カメラ位置
-var camPos = [0.0, 0.0, 3.0];
+var camPosXY = [ 0.0, 0.0,  3.0];
+var camPosXZ = [ 0.0, 3.0,  0.0];
+var camPosYZ = [-3.0, 0.0,  0.0];
+var camUpXY  = [ 0.0, 1.0,  0.0];
+var camUpXZ  = [ 0.0, 0.0, -1.0];
+var camUpYZ  = [ 0.0, 1.0,  0.0];
 
 // 音源位置（同心円状の角度）default 90(=C)
 var SRC_POSITION = 90;
@@ -51,59 +56,27 @@ var freqs = new Uint8Array(afbc);
 var flags = false;
 
 
-// X軸線
-function xAxis(dist){
+// XYZ軸線-------------------------------------------------
+function xyzAxis(dist){
     var pos = new Array();
     var id = new Array();
     var col = new Array();
     pos = [
         dist, 0.0, 0.0,
-        -dist, 0.0, 0.0 
-    ];
-    id = [
-        0,1
-    ];
-    col = [
-        1.0, 0.0, 0.0, 1.0,
-        1.0, 0.0, 0.0, 1.0
-    ];
-
-    return {p:pos, idx:id, c:col};
-}
-
-// Y軸線
-function yAxis(dist){
-    var pos = new Array();
-    var id = new Array();
-    var col = new Array();
-    pos = [
+        -dist, 0.0, 0.0,
         0.0, dist, 0.0,
-        0.0, -dist, 0.0 
-    ];
-    id = [
-        0,1
-    ];
-    col = [
-        0.0, 1.0, 0.0, 1.0,
-        0.0, 1.0, 0.0, 1.0
-    ];
-
-    return {p:pos, idx:id, c:col};
-}
-
-// Z軸線
-function zAxis(dist){
-    var pos = new Array();
-    var id = new Array();
-    var col = new Array();
-    pos = [
+        0.0, -dist, 0.0,
         0.0, 0.0, dist,
         0.0, 0.0, -dist 
     ];
     id = [
-        0,1
+        0,1,2,3,4,5
     ];
     col = [
+        1.0, 0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 1.0,
         0.0, 0.0, 1.0, 1.0,
         0.0, 0.0, 1.0, 1.0
     ];
@@ -126,14 +99,14 @@ function circle(num, r){
     for(var i = 0; i < num; i++){
         var j = rad * i;
         x = r*Math.cos(j);
-        y = r*Math.sin(j);
+        z = r*(-Math.sin(j));
         //console.log("x: ",x,"y: ",y);
-        z = 0.0;
+        y = 0.0;
         pos.push(x, y, z);
 		col.push(0.0, 0.7, 1.0, 1.0);
     }
     pos.push(0.0, 0.0, 0.0);
-	col.push(0.0, 0.7, 1.0, 0.7);
+	col.push(1.0, 0.7, 0.0, 0.7);
 
     for(i=0; i<num; i++){
         id.push(i);
@@ -150,7 +123,7 @@ function circle(num, r){
 ---------------------------------------------------------*/
 function soundCone(degree, r){
 	var pos = new Array();
-    var id = new Array();
+    var id  = new Array();
     var col = new Array();
     var x, y, z;
 	// 扇の開き
@@ -158,27 +131,29 @@ function soundCone(degree, r){
     // SRC_POSITIONの初期値は90度
     var posRad = SRC_POSITION % 360 * Math.PI / 180;
     x = Math.cos(posRad); // ≒ 0
-    y = Math.sin(posRad); // ≒ 1
+    z = -Math.sin(posRad); // ≒ 1
 	
     // 単位円における(0.0, 1.0, 0.0)を基本位置とする
 	// 発音点(距離倍)
-	pos.push(x*r, y*r, 0.0);
+	pos.push(x*r, 0.0, z*r);
 
     // 発音点からみた単位円上のX+
-    // (0.0, 1.0, 0.0)からみて-y方向にdegree分開く
-    // = +xから-degree方向
+    // (0.0, 0.0, -1.0)からみてz方向にdegree分開く
+    // = z=0から-degree方向
     var posRad2 = rad/2;
     var t1x = (x - Math.cos(posRad + posRad2))* r;
-    var t1y = (y - Math.sin(posRad + posRad2))* r;
-    pos.push(t1x, t1y, 0.0);
+    var t1y = 0;
+    var t1z = (z + Math.sin(posRad + posRad2))* r;
+    pos.push(t1x, t1y, t1z);
     
     // 発音点からみた単位円上のX-
-    // (0.0, 1.0, 0.0)からみて-y方向にdegree分開く
-    // = -xから+degree方向
+    // (0.0, 0.0, -1.0)からみてz方向にdegree分開く
+    // = z=0から+degree方向
     var posRad3 = -rad/2;
 	var t2x = (x - Math.cos(posRad + posRad3))* r;
-    var t2y = (y - Math.sin(posRad + posRad3))* r;
-	pos.push(t2x, t2y, 0.0);
+    var t2y = 0;
+    var t2z = (z + Math.sin(posRad + posRad3))* r;
+	pos.push(t2x, t2y, t2z);
 
 	// color
 	col.push(1.0, 1.0, 1.0, 1.0);
@@ -194,42 +169,40 @@ function soundCone(degree, r){
 function freqToCircle(degree, len, num){
     /******************************************************************************** 
         周波数領域で色分けしたサークル上の図形を表示する
-        音源位置が0Hz, 最高距離が24kHz(サンプリング周波数/2)とする 
-        smoothingによって見た目が変わりそうなのでそこを見つつ適宜調整。
         位置:距離を周波数分割数で割る。
         　 基本的な考え方は円柱を色で分けていた杉本さんのプログラムと同じはず
         色  :freqで表現している色をそのまま活用
-        20170313追記:
-        サウンドコーンの概念は球欠でないと解決しない。
-        表示がおかしいことになってしまった。
-        soundOuterAngle=360
         20170321追記:
         極座標系を扱わないとY軸の計算が合わない。
         1frameずつconsoleに出してみる。
     *******************************************************************************/　　　　　　
     
     var pos = new Array();
-    var id = new Array();
+    var id  = new Array();
     var col = new Array();
     var hueFunc = new Array();
     var r,g,b,a;
 
     var rad = degree * Math.PI / 180;
-    var jrad = 360/num;
+    var jrad = 360 / num * Math.PI / 180;
+    var posRad = SRC_POSITION % 360 * Math.PI / 180;
+    var posRad2 = rad / 2;
+
+    var x = len *  Math.cos(posRad);   //  0
+    var y = len *  Math.cos(posRad);   //  0
+    var z = len * (-Math.sin(posRad)); // -1
 
     // SRC_POSITIONの初期値は90度
-    var posRad = SRC_POSITION % 360 * Math.PI / 180;
-    var x = len * Math.cos(posRad) * Math.cos(0); // ≒ 0
-    var y = len * Math.sin(posRad); // ≒ 1
-    var z = len * Math.cos(posRad) * Math.sin(0);
+    // x = rsinθcosφ
+    // y = rsinθsinφ
+    // z = rcosθ
+    // x -> z, y -> x, z -> y
 
-    // SRC_POSITIONから180-degreeの開いたlenの位置
-    var posRad2 = ((180 - degree) * Math.PI /180)/2;
-    var t1x = len * Math.cos(posRad2) * Math.cos(0);
-    var t1y = len * Math.sin(posRad2);
-    var t1z = len * Math.cos(posRad2) * Math.sin(0);
+    var t1x = len * (x - Math.cos(posRad + posRad2));
+    var t1y = len;
+    var t1z = len * (z + Math.sin(posRad + posRad2));
 
-    // 周波数:分割数
+    // 周波数:分割数 
     var hz;
     var ilength;
 
@@ -237,17 +210,18 @@ function freqToCircle(degree, len, num){
     var hue;
     var sat = 1;
     var val = freqs[i] / 256;
-    var i, j, jx, jz;
+    var i, j, jx, jy, jz;
     
     // Length/i = 周波数対位置
     // 位置と色情報
     for(i = 0; i < afbc; i++){
         // hzは距離の分割数に相当する。
-        hz = t1y - (t1y / (afbc - 1)) * i;
-        ilength = len / (afbc - 1) * i;
+        // zは[-1, 1]の範囲
+        hz = z - (z / afbc) * i;
+        ilength = len / (afbc) * i;
 
         // color
-        hue = i / (afbc-1) * 360;
+        hue = i / (afbc) * 360;
         val = freqs[i] / 256;
 
         // 色変換
@@ -258,31 +232,38 @@ function freqToCircle(degree, len, num){
         a = hueFunc[3];
         
         for(j = 0; j < num; j++){
-            // 音源からの距離（原点から伸びていくイメージ）
-            // 円を描くイメージではあるが、弧の伸び方は違う
-            var jx =  Math.cos(Math.PI / 180 * jrad * j);
-            var jz = -Math.sin(Math.PI / 180 * jrad * j);
-            jx = jx * t1x * ilength;
-            jz = jz * t1y * ilength;
-
+            // 極座標系でのプロット
+            jx =  ilength * t1x * Math.cos(jrad * j);
+            jy =  ilength * t1y * Math.sin(jrad * j);
+            jz =  ilength * t1z * hz;
+            
             // x, z はその位置における開きの位置にある
-            pos.push(jx, hz, jz);
+            pos.push(jx, jy, jz);
             col.push(r, g, b, a);
         }
     }
 
     // index（筒描画のインデックスは一度やったはずだが？）
     // i = 距離の分割
-    for(i = 0; i < afbc-1; i++){
+    for(i = 0; i < afbc - 1; i++){
         // j = 筒の分割
-        for(j = 0; j < num-1; j++){
-            var k = i*num + j;
+        for(j = 0; j < num - 1; j++){
+            var k = i * num + j;
             id.push(k, k+1, k+num+1, k, k+num+1, k+num);
         }
         // 0 , 0+1, num+1, 0, num+1, num
-        var l = i*num;
+        var l = i * num;
         id.push(l+num-1, l, l+num, l+num-1, l+num, l+num*2-1);
     }
+
+    //add 
+    pos.push(0.0, 0.0, 0.0);
+    col.push(r, g, b, a);
+    var k = num * afbc;
+    id.push(k, k-num,   k-num+1);
+    id.push(k, k-num+1, k-num+2);
+    id.push(k, k-num+2, k-num+3);
+    id.push(k, k-num+3, k-num);
 
     return {p:pos, idx:id, c:col};
 }

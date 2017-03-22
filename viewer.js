@@ -99,28 +99,17 @@ window.onload = function(){
 	var fIbo = create_ibo(fIndex);
 
 
-	// X,Y axis--------------------------------------------------------------------
-	var xData = xAxis(10);
-	var xPosition = xData.p;
-	var xColor = xData.c;
-	var xIndex = xData.idx;
+	// X,Y,Z axis--------------------------------------------------------------------
+	var xyzData = xyzAxis(10);
+	var xyzPosition = xyzData.p;
+	var xyzColor = xyzData.c;
+	var xyzIndex = xyzData.idx;
 
-	var xVBO = [];
-	xVBO[0] = create_vbo(xPosition);
-	xVBO[1] = create_vbo(xColor);
+	var xyzVBO = [];
+	xyzVBO[0] = create_vbo(xyzPosition);
+	xyzVBO[1] = create_vbo(xyzColor);
 
-	var xIbo = create_ibo(xIndex);
-
-	var yData = yAxis(10);
-	var yPosition = yData.p;
-	var yColor = yData.c;
-	var yIndex = yData.idx;
-
-	var yVBO = [];
-	yVBO[0] = create_vbo(yPosition);
-	yVBO[1] = create_vbo(yColor);
-
-	var yIbo = create_ibo(yIndex);
+	var xyzIbo = create_ibo(xyzIndex);
 
 	// - uniform関連 -------------------------------------------------------------- *
 	// uniformLocationの取得
@@ -143,22 +132,6 @@ window.onload = function(){
 	var vpMatrix = m.identity(m.create());
 	var mvpMatrix = m.identity(m.create());
 	var invMatrix = m.identity(m.create());
-
-
-	// - レンダリングのための WebGL 初期化設定 ------------------------------------
-	// カメラの上方向を表すベクトル
-	var camUpDirection = [0.0, 1.0, 0.0];
-	
-	// 各種フラグを有効化する
-	gl.enable(gl.BLEND);
-	
-	// ブレンドファクター
-	gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
-
-	// アニメーション用変数設定
-	var run = true;
-	var count = 0;
-	var camPosition = camPos;
 
 	// event -------------------------------------------------------------------
 	var devEve = document.getElementById('device');
@@ -237,39 +210,44 @@ window.onload = function(){
 
 	camEve.addEventListener('change',function(e){
 		var eveCD = e.currentTarget.value;
-		camPosition = [0, 0, eveCD];
+		camPosXY = [0, 0, eveCD];
+		camPosXZ = [0, eveCD, 0];
+		camPosYZ = [-eveCD, 0, 0];
 	}, false);
 
 	window.addEventListener('keydown',function(e){
 		var key = e.keyCode;
 		var d = 0.05;
-		// WASD
-		if(key === 87){
+		if(key === 87){       // W
 			LZ -= d;
-		}else if(key === 65){
+		}else if(key === 65){ // A
 			LX -= d;
-		}else if(key === 83){
+		}else if(key === 83){ // S
 			LZ += d;
-		}else if(key === 68){
+		}else if(key === 68){ // D
 			LX += d;
-		}else if(key === 74){
+		}else if(key === 75){ // M
+			LY -= d;
+		}else if(key === 85){ // U
+			LY += d;
+		}else if(key === 74){ // J
 			console.log(listener);
 			var px = panner.positionX.value;
-			//var py = panner.positionY.value;
+			var py = panner.positionY.value;
 			var pz = panner.positionZ.value;
 			var lx = listener.positionX.value;
-			//var ly = listener.positionY.value;
+			var ly = listener.positionY.value;
 			var lz = listener.positionZ.value;
 			var x = px - lx;
-			//var y = ly - py;
+			var y = py - ly;
 			var z = pz - lz;
-			var len = Math.sqrt(x * x + z * z);
+			var len = Math.sqrt(x * x + y * y +z * z);
 			x /= len;
-			//ly /= len;
+			y /= len;
 			z /= len;
 			// リスナーは向きをorientationではなくforwordX,Y,Zとして持っていることに注意
-			listener.setOrientation(x, 0.0, z, 0.0, 1.0, 0.0);
-			console.log("Set listener orientation:", listener);
+			listener.setOrientation(x, y, z, 0.0, 1.0, 0.0);
+			console.log("Set listener orientation");
 			return;
 		}
 		gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO[0]);
@@ -277,33 +255,71 @@ window.onload = function(){
 		var i = 36 * 3;
 		// YとZが入れ替わっていることに注意。要修正
 		cBufferPosition[i] = LX;
-		cBufferPosition[i+1] = -LZ;
-		cBufferPosition[i+2] = LY;
+		cBufferPosition[i+1] = LY;
+		cBufferPosition[i+2] = LZ;
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, cBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
 
-	render();
 
-	function render(){
+	// カメラ
+	var camPosition;
+	var camUp;
+	
+	// 各種フラグを有効化する
+	gl.enable(gl.BLEND);
 
-		// カメラの座標
-		// ビュー×プロジェクション座標変換行列
-		m.lookAt(camPosition, [0, 0, 0], camUpDirection, vMatrix);
-		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
-		m.multiply(pMatrix, vMatrix, vpMatrix);
+	// ブレンドファクター
+	gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
 
-		count++;
+	var run = true;
+	
+	three();
 
-		var rad = count % 360 * Math.PI / 180;
-
-		
-
+	function three(){
 		// canvasを初期化--------------------------------------------------------
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
+		// XYカメラの座標(左上)
+		camPosition = camPosXY;
+		camUp = camUpXY;
+		// ビュー×プロジェクション座標変換行列
+		gl.viewport(0, mainc.height/2, mainc.width/2, mainc.height/2);
+		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
+		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
+		m.multiply(pMatrix, vMatrix, vpMatrix);
 
+		render();
+		
+		// XZカメラの座標(左下)
+		camPosition = camPosXZ;
+		camUp = camUpXZ;
+		// ビュー×プロジェクション座標変換行列
+		gl.viewport(0, 0, mainc.width/2, mainc.height/2);
+		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
+		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
+		m.multiply(pMatrix, vMatrix, vpMatrix);
+		
+		render();
+
+		// YZカメラの座標(右上)
+		camPosition = camPosYZ;
+		camUp = camUpYZ;
+		// ビュー×プロジェクション座標変換行列
+		gl.viewport(mainc.width/2, mainc.height/2, mainc.width/2, mainc.height/2);
+		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
+		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
+		m.multiply(pMatrix, vMatrix, vpMatrix);
+		
+		render();
+
+		if(run){requestAnimationFrame(three);}
+
+	}
+
+	function render(){
+		
 		/*-----------------------------------------------------------------------
 		 Cone:モデル変換座標行列
 		-----------------------------------------------------------------------*/
@@ -402,39 +418,15 @@ window.onload = function(){
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
-		set_attribute(xVBO, attLocation, attStride);
+		set_attribute(xyzVBO, attLocation, attStride);
 		
 		// IBOをバインド
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, xIbo);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, xyzIbo);
 
-		// = レンダリング =========================================================
-		// モデルの描画
-		gl.drawElements(gl.LINES, xIndex.length, gl.UNSIGNED_SHORT, 0);
+		gl.drawElements(gl.LINES, xyzIndex.length, gl.UNSIGNED_SHORT, 0);
 
-		m.identity(mMatrix);
-		m.multiply(vpMatrix, mMatrix, mvpMatrix);
-		m.inverse(mMatrix, invMatrix);
-
-		// uniformLocationへ座標変換行列を登録
-		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
-		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
-		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-		gl.uniform1f(uniLocation[3], pointSize);
-
-		//VBO,IBOのバインド
-		// VBOのバインドと登録
-		set_attribute(yVBO, attLocation, attStride);
-		
-		// IBOをバインド
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, yIbo);
-
-		// = レンダリング =========================================================
-		// モデルの描画
-		gl.drawElements(gl.LINES, yIndex.length, gl.UNSIGNED_SHORT, 0);
 		// コンテキストの再描画
 		gl.flush();
-
-		if(run){requestAnimationFrame(render);}
 	}
 
 }
