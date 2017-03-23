@@ -126,9 +126,9 @@ function soundCone(degree, r){
 	var pos = new Array();
     var id  = new Array();
     var col = new Array();
-    var x = SRC_INIT_POSITION[0];
-    var y = SRC_INIT_POSITION[1];
-    var z = SRC_INIT_POSITION[2];
+    var x = 0;
+    var y = 0;
+    var z = 0;
 
 	// 扇の開き
     var rad = degree * Math.PI / 180;

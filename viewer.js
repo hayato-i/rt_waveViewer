@@ -81,7 +81,6 @@ window.onload = function(){
 	// IBOの生成
 	var cIbo = create_ibo(cIndex);
 
-
 	// Frequency Circle(動的に変更)--------------------------------------------
 	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 8);
 	var fPosition = freqData.p;
@@ -97,7 +96,6 @@ window.onload = function(){
 
 	// IBOの生成
 	var fIbo = create_ibo(fIndex);
-
 
 	// X,Y,Z axis--------------------------------------------------------------------
 	var xyzData = xyzAxis(10);
@@ -154,20 +152,6 @@ window.onload = function(){
 	},false);
 
 	posEve.addEventListener('change', function(e){
-		var evePos = e.currentTarget.value;
-		SRC_POSITION = evePos;
-		document.getElementById('postext').textContent = evePos-90;
-		updatePanner(panner);
-		// coneVBOの更新
-		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
-		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-		// freqVBOの更新(POSITION)
-		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).p);
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
 
 	angleEve.addEventListener('change', function(e){
@@ -330,7 +314,7 @@ window.onload = function(){
 
 		m.identity(mMatrix);
 		// 初期位置[0, 0, -1]
-		// m.transrate(mMatrix, SRC_INIT_POSITION, mMatrix);
+		m.translate(mMatrix, SRC_INIT_POSITION, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 

@@ -27,6 +27,54 @@ body {
         color: springgreen;
 }
 
+.xy-x{
+  position:absolute;
+  top:285px;
+  left:585px;
+  font-size: 0.8em;
+  color:springgreen;
+}
+
+.xy-y{
+  position:absolute;
+  top:10px;
+  left:315px;
+  font-size: 0.8em;
+  color:springgreen;
+}
+
+.xz-x{
+  position:absolute;
+  top:885px;
+  left:585px;
+  font-size: 0.8em;
+  color:springgreen;
+}
+
+.xz-z{
+  position:absolute;
+  top:1185px;
+  left:315px;
+  font-size: 0.8em;
+  color:springgreen;
+}
+
+.yz-y{
+  position:absolute;
+  top:10px;
+  left:915px;
+  font-size: 0.8em;
+  color:springgreen;
+}
+
+.yz-z{
+  position:absolute;
+  top:285px;
+  left:1185px;
+  font-size: 0.8em;
+  color:springgreen;
+}
+
 .btn{
     color: cadetblue;
 }
