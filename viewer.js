@@ -254,7 +254,7 @@ window.onload = function(){
 	gl.enable(gl.BLEND);
 
 	// ブレンドファクター
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.SRC_ALPHA);
 
 	// flag
 	var run = true;

@@ -47,11 +47,11 @@ var hidContext;
 
 // analyser 設定
 const FFTSIZE = 32;
-const SMOOTHING = 0.6;
+const SMOOTHING = 0.8;
 analyser.smoothingTimeConstant = SMOOTHING;
 analyser.fftSize = FFTSIZE;
 analyser.minDecibels = -120;
-analyser.maxDecibels = -10;
+analyser.maxDecibels = -30;
 var afbc = analyser.frequencyBinCount;
 var freqs = new Uint8Array(afbc);
 var flags = false;
@@ -193,11 +193,10 @@ function freqToCircle(degree, len, num){
     var posRad = SRC_POSITION % 360 * Math.PI / 180;
     var posRad2 = rad / 2;
 
-    var x = len *  Math.cos(posRad);   //  0
-    var y = len *  Math.cos(posRad);   //  0
-    var z = len * (-Math.sin(posRad)); // -1
+    var x = SRC_INIT_POSITION[0]; //  0
+    var y = SRC_INIT_POSITION[1]; //  0
+    var z = SRC_INIT_POSITION[2]; // -1
 
-    // SRC_POSITIONの初期値は90度
     // x = rsinθcosφ
     // y = rsinθsinφ
     // z = rcosθ
@@ -229,7 +228,7 @@ function freqToCircle(degree, len, num){
         val = freqs[i] / 256;
 
         // 色変換
-        hueFunc = hsva(hue, sat, val, 0.5);
+        hueFunc = hsva(hue, sat, val, 0.6);
         r = hueFunc[0];
         g = hueFunc[1];
         b = hueFunc[2];
@@ -248,7 +247,7 @@ function freqToCircle(degree, len, num){
         }
         // 4i(中央)
         pos.push(0, 0, hz * len);
-        col.push(r, g, b, a);
+        col.push(r, g, b, 0.7);
     }
 
     // index（筒描画のインデックスは一度やったはずだが？）
