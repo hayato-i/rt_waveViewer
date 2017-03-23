@@ -323,9 +323,14 @@ window.onload = function(){
 		
 		/*-----------------------------------------------------------------------
 		 Cone:モデル変換座標行列
+		 translate:可
+		 scale:可？
+		 rotate:可
 		-----------------------------------------------------------------------*/
 
 		m.identity(mMatrix);
+		// 初期位置[0, 0, -1]
+		// m.transrate(mMatrix, SRC_INIT_POSITION, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -382,6 +387,7 @@ window.onload = function(){
 
 		/*-----------------------------------------------------------------------
 		 Circle:モデル変換座標行列
+		 transrate不可(円が大きくなるため)
 		-----------------------------------------------------------------------*/
 		m.identity(mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);

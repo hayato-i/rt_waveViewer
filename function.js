@@ -17,7 +17,7 @@ var camUpYZ  = [ 0.0, 1.0,  0.0];
 
 // 音源位置（同心円状の角度）default 90(=C)
 var SRC_POSITION = 90;
-var SRC_POSITION_XYZ = [0, 0, -1];
+var SRC_INIT_POSITION = [0, 0, -1];
 // Panner Nodeパラメータ
 var sPosX = 0;
 var sPosY = 0;
@@ -126,19 +126,16 @@ function soundCone(degree, r){
 	var pos = new Array();
     var id  = new Array();
     var col = new Array();
-    var x, y, z;
+    var x = SRC_INIT_POSITION[0];
+    var y = SRC_INIT_POSITION[1];
+    var z = SRC_INIT_POSITION[2];
 
 	// 扇の開き
     var rad = degree * Math.PI / 180;
-    // SRC_POSITIONの初期値は90度
-    var posRad = SRC_POSITION % 360 * Math.PI / 180;
-    x = Math.cos(posRad); // ≒ 0
-    y = 0;
-    z = -Math.sin(posRad); // ≒ 1
     
     // 単位円における(0.0, 1.0, 0.0)を基本位置とする
 	// 発音点(距離倍)
-	pos.push(x*r, 0.0, z*r);
+	pos.push(x, y, z);
 
     // 発音点からみた単位円上のX+
     // (0.0, 0.0, -1.0)からみてz方向にdegree分開く
@@ -274,7 +271,7 @@ function freqToCircle(degree, len, num){
         id.push(n, n-1, n-num);
     }
 
-    //最後の1面
+    //最後の球面
     var m = (num+1) * afbc-1;
     id.push(m, m-num,   m-num+1);
     id.push(m, m-num+1, m-num+2);
@@ -284,7 +281,7 @@ function freqToCircle(degree, len, num){
     id.push(m, m-num+5, m-num+6);
     id.push(m, m-num+6, m-num+7);
     id.push(m, m-num+7, m-num  );
-    
+
     return {p:pos, idx:id, c:col};
 }
 
