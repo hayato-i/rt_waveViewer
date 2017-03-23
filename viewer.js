@@ -51,7 +51,7 @@ window.onload = function(){
     attStride[0] = 3;
 	attStride[1] = 4;
 
-	// Sound cone angle(動的に変更)-----------------------------------------------
+	// Sound cone angle(動的に変更->GL側でtransformの予定)----------------------------
 	var coneData = soundCone(OUTER_ANGLE, DISTANCE);
     var sPosition = coneData.p;
 	var sBufferPosition = new Float32Array(coneData.p);
@@ -83,7 +83,7 @@ window.onload = function(){
 
 
 	// Frequency Circle(動的に変更)--------------------------------------------
-	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 4);
+	var freqData = freqToCircle(OUTER_ANGLE, DISTANCE, 8);
 	var fPosition = freqData.p;
 	var fBufferPosition = new Float32Array(fPosition);
 	var fColor = freqData.c;
@@ -165,7 +165,7 @@ window.onload = function(){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 		// freqVBOの更新(POSITION)
 		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).p);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
@@ -182,7 +182,7 @@ window.onload = function(){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 		// freqVBOの更新(POSITION)
 		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).p);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
@@ -203,7 +203,7 @@ window.onload = function(){
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 		// freqVBOの更新(POSITION)
 		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).p);
+		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	},false);
@@ -364,7 +364,7 @@ window.onload = function(){
 
 			// 再生中の色表示の差分を取得
 			gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[1]);
-			fBufferColor = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 4).c);
+			fBufferColor = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).c);
 			gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferColor);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 			

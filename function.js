@@ -17,6 +17,7 @@ var camUpYZ  = [ 0.0, 1.0,  0.0];
 
 // 音源位置（同心円状の角度）default 90(=C)
 var SRC_POSITION = 90;
+var SRC_POSITION_XYZ = [0, 0, -1];
 // Panner Nodeパラメータ
 var sPosX = 0;
 var sPosY = 0;
@@ -126,6 +127,7 @@ function soundCone(degree, r){
     var id  = new Array();
     var col = new Array();
     var x, y, z;
+
 	// 扇の開き
     var rad = degree * Math.PI / 180;
     // SRC_POSITIONの初期値は90度
@@ -176,7 +178,6 @@ function freqToCircle(degree, len, num){
         色  :freqで表現している色をそのまま活用
         20170321追記:
         極座標系を扱わないとY軸の計算が合わない。
-        1frameずつconsoleに出してみる。
     *******************************************************************************/　　　　　　
     
     var pos = new Array();
@@ -184,6 +185,10 @@ function freqToCircle(degree, len, num){
     var col = new Array();
     var hueFunc = new Array();
     var r,g,b,a;
+
+    // addPosFromDeg:45度単位で中間ポイントの追加
+    // プロット数は4ずつ増加する
+    var addPosFromDeg = degree / 45;
 
     var rad = degree * Math.PI / 180;
     var jrad = 360 / num * Math.PI / 180;
@@ -274,8 +279,12 @@ function freqToCircle(degree, len, num){
     id.push(m, m-num,   m-num+1);
     id.push(m, m-num+1, m-num+2);
     id.push(m, m-num+2, m-num+3);
-    id.push(m, m-num+3, m-num);
-
+    id.push(m, m-num+3, m-num+4);
+    id.push(m, m-num+4, m-num+5);
+    id.push(m, m-num+5, m-num+6);
+    id.push(m, m-num+6, m-num+7);
+    id.push(m, m-num+7, m-num  );
+    
     return {p:pos, idx:id, c:col};
 }
 
