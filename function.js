@@ -132,6 +132,7 @@ function soundCone(degree, r){
 
 	// 扇の開き
     var rad = degree * Math.PI / 180;
+    var posRad = SRC_POSITION % 360 * Math.PI / 180;
     
     // 単位円における(0.0, 1.0, 0.0)を基本位置とする
 	// 発音点(距離倍)
