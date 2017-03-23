@@ -46,7 +46,7 @@ var hidContext;
 
 // analyser 設定
 const FFTSIZE = 32;
-const SMOOTHING = 0.7;
+const SMOOTHING = 0.6;
 analyser.smoothingTimeConstant = SMOOTHING;
 analyser.fftSize = FFTSIZE;
 analyser.minDecibels = -120;
@@ -218,16 +218,15 @@ function freqToCircle(degree, len, num){
     // posとcol
     for(i = 0; i < afbc; i++){
         // hzは距離の分割数に相当する。
-        // zは[-1, 1]の範囲
-        hz = z - (z / (afbc)) * i;
-        ilength = len / (afbc) * i;
+        hz = z - (z / (afbc-1)) * i;
+        ilength = len / (afbc-1) * i;
 
         // color
         hue = i / (afbc) * 360;
         val = freqs[i] / 256;
 
         // 色変換
-        hueFunc = hsva(hue, sat, val, 0.8);
+        hueFunc = hsva(hue, sat, val, 0.5);
         r = hueFunc[0];
         g = hueFunc[1];
         b = hueFunc[2];
@@ -245,8 +244,7 @@ function freqToCircle(degree, len, num){
             col.push(r, g, b, a);
         }
         // 4i(中央)
-        pos.push(0, 0, hz);
-        a = 0.2;
+        pos.push(0, 0, hz * len);
         col.push(r, g, b, a);
     }
 
@@ -254,21 +252,14 @@ function freqToCircle(degree, len, num){
     // i = 距離の分割
     for(i = 0; i < afbc-1; i++){
         // 筒表面描画(4分割円筒)
-        // ex)0,1,6, 0,6,5, 1,2,7, 1,7,6, 2,3,8, 3,8,7
-        // ex)5,6,11, 5,11,10
         for(j = 0; j < num - 1; j++){
             var k = i * (num+1) + j;
             id.push(k, k+1, k+(num+1)+1, k, k+(num+1)+1, k+(num+1));
         }
-        // ex)3, 0, 5(i*(num+1)), 3, 5(i*(num+1)), 8(num*2)
-        // ex)8, 5, 10,           8, 10,           13
-        // ex)13,10,15,          10, 15,           18
         var l = (i+1) * (num+1);
         id.push(l-2, l-(num+1), l, l-2, l, l+num-1);
 
         // 球面の分割(中心点4i)
-        // 4 0 1, 4 1 2, 4 2 3
-        // 9 5 6, 9 6 7, 9 7 8
         var n = (i+1) * (num+1) -1;
         for(j = 0; j < num - 1 ;j++){
             id.push(n, n-num+j, n-num+j+1);
@@ -277,10 +268,13 @@ function freqToCircle(degree, len, num){
         // 9 8 5
         id.push(n, n-1, n-num);
     }
-    //最後の1面
-    var m = num*afbc;
-    id.push(m, )
 
+    //最後の1面
+    var m = (num+1) * afbc-1;
+    id.push(m, m-num,   m-num+1);
+    id.push(m, m-num+1, m-num+2);
+    id.push(m, m-num+2, m-num+3);
+    id.push(m, m-num+3, m-num);
 
     return {p:pos, idx:id, c:col};
 }
