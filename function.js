@@ -131,8 +131,9 @@ function soundCone(degree, r){
     // SRC_POSITIONの初期値は90度
     var posRad = SRC_POSITION % 360 * Math.PI / 180;
     x = Math.cos(posRad); // ≒ 0
+    y = 0;
     z = -Math.sin(posRad); // ≒ 1
-	
+    
     // 単位円における(0.0, 1.0, 0.0)を基本位置とする
 	// 発音点(距離倍)
 	pos.push(x*r, 0.0, z*r);
@@ -159,8 +160,9 @@ function soundCone(degree, r){
 	col.push(1.0, 1.0, 1.0, 1.0);
 	col.push(1.0, 1.0, 1.0, 1.0);
 	col.push(1.0, 1.0, 1.0, 1.0);
+
     // 描画順
-    id.push(1, 0, 2);
+    id.push(0, 1, 0, 2);
     
     return {p:pos, idx:id, c:col};
 }
@@ -213,11 +215,11 @@ function freqToCircle(degree, len, num){
     var i, j, jx, jy, jz;
     
     // Length/i = 周波数対位置
-    // 位置と色情報
+    // posとcol
     for(i = 0; i < afbc; i++){
         // hzは距離の分割数に相当する。
         // zは[-1, 1]の範囲
-        hz = z - (z / afbc) * i;
+        hz = z - (z / (afbc)) * i;
         ilength = len / (afbc) * i;
 
         // color
@@ -233,6 +235,7 @@ function freqToCircle(degree, len, num){
         
         for(j = 0; j < num; j++){
             // 極座標系でのプロット
+            // 0, 1, 2, 3
             jx =  ilength * t1x * Math.cos(jrad * j);
             jy =  ilength * t1y * Math.sin(jrad * j);
             jz =  ilength * t1z + hz;
@@ -241,29 +244,43 @@ function freqToCircle(degree, len, num){
             pos.push(jx, jy, jz);
             col.push(r, g, b, a);
         }
+        // 4i(中央)
+        pos.push(0, 0, hz);
+        a = 0.2;
+        col.push(r, g, b, a);
     }
 
     // index（筒描画のインデックスは一度やったはずだが？）
     // i = 距離の分割
-    for(i = 0; i < afbc - 1; i++){
-        // j = 筒の分割
+    for(i = 0; i < afbc-1; i++){
+        // 筒表面描画(4分割円筒)
+        // ex)0,1,6, 0,6,5, 1,2,7, 1,7,6, 2,3,8, 3,8,7
+        // ex)5,6,11, 5,11,10
         for(j = 0; j < num - 1; j++){
-            var k = i * num + j;
-            id.push(k, k+1, k+num+1, k, k+num+1, k+num);
+            var k = i * (num+1) + j;
+            id.push(k, k+1, k+(num+1)+1, k, k+(num+1)+1, k+(num+1));
         }
-        // 0 , 0+1, num+1, 0, num+1, num
-        var l = i * num;
-        id.push(l+num-1, l, l+num, l+num-1, l+num, l+num*2-1);
-    }
+        // ex)3, 0, 5(i*(num+1)), 3, 5(i*(num+1)), 8(num*2)
+        // ex)8, 5, 10,           8, 10,           13
+        // ex)13,10,15,          10, 15,           18
+        var l = (i+1) * (num+1);
+        id.push(l-2, l-(num+1), l, l-2, l, l+num-1);
 
-    //add 
-    pos.push(0.0, 0.0, 0.0);
-    col.push(r, g, b, a);
-    var k = num * afbc;
-    id.push(k, k-num,   k-num+1);
-    id.push(k, k-num+1, k-num+2);
-    id.push(k, k-num+2, k-num+3);
-    id.push(k, k-num+3, k-num);
+        // 球面の分割(中心点4i)
+        // 4 0 1, 4 1 2, 4 2 3
+        // 9 5 6, 9 6 7, 9 7 8
+        var n = (i+1) * (num+1) -1;
+        for(j = 0; j < num - 1 ;j++){
+            id.push(n, n-num+j, n-num+j+1);
+        }
+        // 4 3 0
+        // 9 8 5
+        id.push(n, n-1, n-num);
+    }
+    //最後の1面
+    var m = num*afbc;
+    id.push(m, )
+
 
     return {p:pos, idx:id, c:col};
 }

@@ -2,6 +2,7 @@ body {
   font-family: 'Open Sans', sans-serif;
   color: black;
 }
+
 .xy {
         position:absolute;
         top:10px;
@@ -31,14 +32,19 @@ body {
 }
 
 .control{
-  position:absolute;
-  top:610px;
-  left:620px;
+  position: absolute;
+  top: 608px;
+  left: 608px;
+  width: 590px;
+  height: 590px;
+  padding-top: 10px;
+  padding-left: 10px;
+  right: 0px;
+  bottom: 0px;
   display: inline;
-  color : #888888;
-  background: #262626;
+  color: #9a9a9a;
+  background: #2b2a2a;
 }
-
 
 #postext, #iatext{
   display:inline-block;

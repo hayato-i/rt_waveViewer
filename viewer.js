@@ -270,8 +270,9 @@ window.onload = function(){
 	gl.enable(gl.BLEND);
 
 	// ブレンドファクター
-	gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
+    gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE );
 
+	// flag
 	var run = true;
 	
 	three();
@@ -343,7 +344,7 @@ window.onload = function(){
 
 		// = レンダリング =========================================================
 		// モデルの描画
-		gl.drawElements(gl.LINE_STRIP, sIndex.length, gl.UNSIGNED_SHORT, 0);
+		gl.drawElements(gl.LINES, sIndex.length, gl.UNSIGNED_SHORT, 0);
 
 		/*-----------------------------------------------------------------------
 		 FrequencyCircle:モデル変換座標行列
