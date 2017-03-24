@@ -5,6 +5,7 @@ body {
 
 .xy {
         position:absolute;
+        user-select: none;
         top:10px;
         left:20px;
         font-size:1.5em;
@@ -13,6 +14,7 @@ body {
 
 .xz {
         position:absolute;
+        user-select: none;
         top:610px;
         left:620px;
         font-size:1.5em;
@@ -21,6 +23,7 @@ body {
 
 .yz {
         position:absolute;
+        user-select: none;
         top:610px;
         left:20px;
         font-size:1.5em;
@@ -29,6 +32,7 @@ body {
 
 .fp{
         position:absolute;
+        user-select: none;
         top:10px;
         left:620px;
         font-size:1.5em;
@@ -37,6 +41,7 @@ body {
 
 .xy-x{
   position:absolute;
+  user-select: none;
   top:285px;
   left:585px;
   font-size: 0.8em;
@@ -45,6 +50,7 @@ body {
 
 .xy-y{
   position:absolute;
+  user-select: none;
   top:10px;
   left:315px;
   font-size: 0.8em;
@@ -53,6 +59,7 @@ body {
 
 .xz-x{
   position:absolute;
+  user-select: none;
   top:885px;
   left:585px;
   font-size: 0.8em;
@@ -61,6 +68,7 @@ body {
 
 .xz-z{
   position:absolute;
+  user-select: none;
   top:1185px;
   left:315px;
   font-size: 0.8em;
@@ -69,6 +77,7 @@ body {
 
 .yz-y{
   position:absolute;
+  user-select: none;
   top:10px;
   left:915px;
   font-size: 0.8em;
@@ -77,6 +86,7 @@ body {
 
 .yz-z{
   position:absolute;
+  user-select: none;
   top:285px;
   left:1185px;
   font-size: 0.8em;

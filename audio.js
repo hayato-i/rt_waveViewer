@@ -25,9 +25,9 @@ function updatePanner(pan){
     pan.panningModel = PANNING_MODEL;
     pan.distanceModel = DISTANCE_MODEL;
 
-    var x = listener.positionX.value-SRC_POSITION[0];
-    var y = listener.positionY.value-SRC_POSITION[1];
-    var z = listener.positionZ.value-SRC_POSITION[2];
+    var x = 0-SRC_POSITION[0];
+    var y = 0-SRC_POSITION[1];
+    var z = 0-SRC_POSITION[2];
 
     var sq = Math.sqrt(x*x+y*y+z*z);
 

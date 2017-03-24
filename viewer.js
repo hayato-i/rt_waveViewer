@@ -148,6 +148,7 @@ window.onload = function(){
 	// minMatrix.js を用いた行列関連処理
 	// matIVオブジェクトを生成
 	var m = new matIV();
+
 	// 各種行列の生成と初期化
 	var mMatrix = m.identity(m.create());
 	var vMatrix = m.identity(m.create());
@@ -186,17 +187,18 @@ window.onload = function(){
 		console.log(DISTANCE_MODEL);
 	},false);
 
-
 	angleEve.addEventListener('change', function(e){
 		var eveAngle = e.currentTarget.value; 
 		OUTER_ANGLE = eveAngle;
 		document.getElementById('iatext').textContent = eveAngle;
 		updatePanner(panner);
+		
 		// coneVBOの更新
 		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
 		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
 		// freqVBOの更新(POSITION)
 		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
 		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).p);
@@ -238,10 +240,12 @@ window.onload = function(){
 			var y = py - ly;
 			var z = pz - lz;
 			var len = Math.sqrt(x * x + y * y +z * z);
+
 			// normalize
 			x /= len;
 			y /= len;
 			z /= len;
+			
 			// リスナーはカメラのように上方向の要素をもっていることに注意
 			listener.setOrientation(x, y, z, 0.0, 1.0, 0.0);
 			console.log("Set listener orientation");
@@ -276,7 +280,6 @@ window.onload = function(){
 		// canvasを初期化--------------------------------------------------------
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
-		firstPerson = false;
 
 		// XYカメラの座標(左上)
 		camPosition = camPosXY;
@@ -287,6 +290,11 @@ window.onload = function(){
 		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
 		m.multiply(pMatrix, vMatrix, vpMatrix);
 
+		// 描画フラグ
+		firstPerson = false;
+		meshFlag = false;
+
+		// 描画関数
 		render();
 		
 		// XZカメラの座標(右下)
@@ -298,6 +306,11 @@ window.onload = function(){
 		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
 		m.multiply(pMatrix, vMatrix, vpMatrix);
 		
+		// 描画フラグ
+		firstPerson = false;
+		meshFlag = true;
+
+		// 描画関数
 		render();
 
 		// YZカメラの座標(左下)
@@ -309,6 +322,11 @@ window.onload = function(){
 		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
 		m.multiply(pMatrix, vMatrix, vpMatrix);
 		
+		// 描画フラグ
+		firstPerson = false;
+		meshFlag = false;
+
+		// 描画関数
 		render();
 
 		// XYカメラの座標(右上)
@@ -320,10 +338,12 @@ window.onload = function(){
 		m.lookAt(camPosition, [0, 0, -1], camUp, vMatrix);
 		m.multiply(pMatrix, vMatrix, vpMatrix);
 
+		// 描画フラグ
 		firstPerson = true;
+		meshFlag = true;
 
+		// 描画関数
 		render();
-
 
 		if(run){requestAnimationFrame(three);}
 
@@ -472,7 +492,8 @@ window.onload = function(){
 
 			gl.drawElements(gl.LINES, xyzIndex.length, gl.UNSIGNED_SHORT, 0);
 
-		}else if(firstPerson === true){
+		}
+		if(mesh === true){
 			/*-----------------------------------------------------------------------
 				Floor mesh
 			-----------------------------------------------------------------------*/

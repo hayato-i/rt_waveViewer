@@ -16,6 +16,7 @@ var camUpXZ  = [ 0.0, 0.0, -1.0];
 var camUpYZ  = [ 0.0, 1.0,  0.0];
 
 // 音源位置
+var SRC_INIT_POSITION = [0, 0, -1];
 var SRC_POSITION = [0, 0, -1];
 // Listener情報
 var camLisFr = [ 0.0, 0.0, -1.0];
@@ -56,10 +57,14 @@ analyser.minDecibels = -120;
 analyser.maxDecibels = -30;
 var afbc = analyser.frequencyBinCount;
 var freqs  = new Uint8Array(afbc);
+
+// フラグ
 var flags  = false;
 var mflags = false;
 var firstPerson = false;
+var meshFlag = false;
 
+// クォータニオン
 var q = new qtnIV();
 var qt = q.identity(q.create());
 
@@ -79,7 +84,7 @@ function mouseMove(e){
     }
     if(mflags === true){
 	    q.rotate(r, [my, mx, 0.0], qt);
-        q.toVecIII([0.0, 0.0, -1.0], qt, SRC_POSITION);
+        q.toVecIII(SRC_INIT_POSITION, qt, SRC_POSITION);
         updatePanner(panner);
     }
 }
@@ -256,7 +261,7 @@ function freqToCircle(degree, len, num){
     var id  = new Array();
     var col = new Array();
     var hueFunc = new Array();
-    var r,g,b,a;
+    var r, g, b, a;
 
     // addPosFromDeg:45度単位で中間ポイントの追加
     // プロット数は4ずつ増加する
@@ -267,9 +272,9 @@ function freqToCircle(degree, len, num){
     var posRad = 90 % 360 * Math.PI / 180;
     var posRad2 = rad / 2;
 
-    var x = SRC_POSITION[0]; //  0
-    var y = SRC_POSITION[1]; //  0
-    var z = SRC_POSITION[2]; // -1
+    var x = SRC_INIT_POSITION[0]; //  0
+    var y = SRC_INIT_POSITION[1]; //  0
+    var z = SRC_INIT_POSITION[2]; // -1
 
     // x = rsinθcosφ
     // y = rsinθsinφ
