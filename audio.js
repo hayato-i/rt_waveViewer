@@ -1,5 +1,6 @@
 var getAudioBuffer = function(url, fn) {  
   var req = new XMLHttpRequest();
+  req.open('GET', url, true);
   // array buffer を指定
   req.responseType = 'arraybuffer';
 
@@ -15,7 +16,6 @@ var getAudioBuffer = function(url, fn) {
     }
   };
 
-  req.open('GET', url, true);
   req.send('');
 };
 

@@ -295,7 +295,8 @@ function freqToCircle(degree, len, num){
     var i, j, jx, jy, jz;
     
     // Length/i = 周波数対位置
-    // posとcol
+    // OUTER_ANGLEによるプロット位置の増加
+    // 45度間隔
     for(i = 0; i < afbc; i++){
         // hzは距離の分割数に相当する。
         hz = z - (z / (afbc-1)) * i;
