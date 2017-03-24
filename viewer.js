@@ -66,6 +66,19 @@ window.onload = function(){
 	// IBOの生成
     var sIbo = create_ibo(sIndex);
 
+	// sound listener--------------------------------------------------------------
+	var lData = soundListener();
+	var lPosition = lData.p;
+	var lBufferPosition = new Float32Array(lPosition);
+	var lColor = lData.c;
+	var lIndex = lData.idx;
+
+	var lVBO = [];
+	lVBO[0] = create_vbo(lPosition);
+	lVBO[1] = create_vbo(lColor);
+
+	var lIbo = create_ibo(lIndex);
+
 	// Sounde Source Circle(動的に変更)--------------------------------------------
 	var circleData = circle(36, DISTANCE);
 	var cPosition = circleData.p;
@@ -109,6 +122,18 @@ window.onload = function(){
 
 	var xyzIbo = create_ibo(xyzIndex);
 
+	// mesh floor--------------------------------------------------------------------
+	var flData = floor(20);
+	var flPosition = flData.p;
+	var flColor = flData.c;
+	var flIndex = flData.idx;
+
+	var flVBO = [];
+	flVBO[0] = create_vbo(flPosition);
+	flVBO[1] = create_vbo(flColor);
+
+	var flIbo = create_ibo(flIndex);
+
 	// - uniform関連 -------------------------------------------------------------- *
 	// uniformLocationの取得
 	var uniLocation = [];
@@ -134,10 +159,20 @@ window.onload = function(){
 	// event -------------------------------------------------------------------
 	var devEve = document.getElementById('device');
 	var dmodelEve = document.getElementById('dmodel');
-	var posEve = document.getElementById('position');
 	var angleEve = document.getElementById('angle');
 	var sdEve = document.getElementById('sd');
 	var camEve = document.getElementById('cd');
+
+	mainc.addEventListener('mousedown',function(){
+		mflags = true;
+	},false);
+
+	mainc.addEventListener('mouseup',function(){
+		mflags = false;
+	},false);
+
+	mainc.addEventListener('mousemove', mouseMove, true);
+
 
 	devEve.addEventListener('change', function(e){
 		PANNING_MODEL = e.currentTarget.value;
@@ -151,8 +186,6 @@ window.onload = function(){
 		console.log(DISTANCE_MODEL);
 	},false);
 
-	posEve.addEventListener('change', function(e){
-	}, false);
 
 	angleEve.addEventListener('change', function(e){
 		var eveAngle = e.currentTarget.value; 
@@ -170,27 +203,6 @@ window.onload = function(){
 		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
-	
-	sdEve.addEventListener('change',function(e){
-		var eveSD = e.currentTarget.value;
-		DISTANCE = eveSD;
-		updatePanner(panner);
-		// circleVBOの更新
-		gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO[0]);
-		cBufferPosition = new Float32Array(circle(36, DISTANCE).p);
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, cBufferPosition);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-		// coneVBOの更新
-		gl.bindBuffer(gl.ARRAY_BUFFER, coneVBO[0]);
-		sBufferPosition = new Float32Array(soundCone(OUTER_ANGLE, DISTANCE).p);
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, sBufferPosition);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-		// freqVBOの更新(POSITION)
-		gl.bindBuffer(gl.ARRAY_BUFFER, freqVBO[0]);
-		fBufferPosition = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).p);
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferPosition);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-	},false);
 
 	camEve.addEventListener('change',function(e){
 		var eveCD = e.currentTarget.value;
@@ -202,19 +214,19 @@ window.onload = function(){
 	window.addEventListener('keydown',function(e){
 		var key = e.keyCode;
 		var d = 0.05;
-		if(key === 87){       // W
-			LZ -= d;
-		}else if(key === 65){ // A
-			LX -= d;
-		}else if(key === 83){ // S
-			LZ += d;
-		}else if(key === 68){ // D
-			LX += d;
-		}else if(key === 75){ // M
-			LY -= d;
-		}else if(key === 85){ // U
-			LY += d;
-		}else if(key === 74){ // J
+		if(key === 87){       // W:Listener Move Forword
+			LisPos[2] -= d;
+		}else if(key === 65){ // A:Listener Move Left
+			LisPos[0] -= d;
+		}else if(key === 83){ // S:Listener Move Back
+			LisPos[2] += d;
+		}else if(key === 68){ // D:Listener Move Right
+			LisPos[0] += d;
+		}else if(key === 75){ // K:Listener Move Down
+			LisPos[1] -= d;
+		}else if(key === 85){ // U:Listener Move Up 
+			LisPos[1] += d;
+		}else if(key === 74){ // J:Direction Sound Source 
 			console.log(listener);
 			var px = panner.positionX.value;
 			var py = panner.positionY.value;
@@ -226,22 +238,21 @@ window.onload = function(){
 			var y = py - ly;
 			var z = pz - lz;
 			var len = Math.sqrt(x * x + y * y +z * z);
+			// normalize
 			x /= len;
 			y /= len;
 			z /= len;
-			// リスナーは向きをorientationではなくforwordX,Y,Zとして持っていることに注意
+			// リスナーはカメラのように上方向の要素をもっていることに注意
 			listener.setOrientation(x, y, z, 0.0, 1.0, 0.0);
 			console.log("Set listener orientation");
 			return;
 		}
-		gl.bindBuffer(gl.ARRAY_BUFFER, circleVBO[0]);
-		listener.setPosition(LX, LY, LZ);
-		var i = 36 * 3;
-		// YとZが入れ替わっていることに注意。要修正
-		cBufferPosition[i] = LX;
-		cBufferPosition[i+1] = LY;
-		cBufferPosition[i+2] = LZ;
-		gl.bufferSubData(gl.ARRAY_BUFFER, 0, cBufferPosition);
+		gl.bindBuffer(gl.ARRAY_BUFFER, lVBO[0]);
+		listener.setPosition(LisPos[0], LisPos[1], LisPos[2]);
+		lBufferPosition[0] = LisPos[0];
+		lBufferPosition[1] = LisPos[1]; 
+		lBufferPosition[2] = LisPos[2]; 
+		gl.bufferSubData(gl.ARRAY_BUFFER, 0, lBufferPosition);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}, false);
 
@@ -265,6 +276,7 @@ window.onload = function(){
 		// canvasを初期化--------------------------------------------------------
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
+		firstPerson = false;
 
 		// XYカメラの座標(左上)
 		camPosition = camPosXY;
@@ -277,9 +289,20 @@ window.onload = function(){
 
 		render();
 		
-		// XZカメラの座標(左下)
+		// XZカメラの座標(右下)
 		camPosition = camPosXZ;
 		camUp = camUpXZ;
+		// ビュー×プロジェクション座標変換行列
+		gl.viewport(mainc.width/2, 0, mainc.width/2, mainc.height/2);
+		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
+		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
+		m.multiply(pMatrix, vMatrix, vpMatrix);
+		
+		render();
+
+		// YZカメラの座標(左下)
+		camPosition = camPosYZ;
+		camUp = camUpYZ;
 		// ビュー×プロジェクション座標変換行列
 		gl.viewport(0, 0, mainc.width/2, mainc.height/2);
 		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
@@ -288,33 +311,65 @@ window.onload = function(){
 		
 		render();
 
-		// YZカメラの座標(右上)
-		camPosition = camPosYZ;
-		camUp = camUpYZ;
+		// XYカメラの座標(右上)
+		camPosition = LisPos;
+		camUp = camUpXY;
 		// ビュー×プロジェクション座標変換行列
 		gl.viewport(mainc.width/2, mainc.height/2, mainc.width/2, mainc.height/2);
-		m.perspective(45, mainc.width / mainc.height, 0.1, 30, pMatrix);
-		m.lookAt(camPosition, [0, 0, 0], camUp, vMatrix);
+		m.perspective(90, mainc.width / mainc.height, 0.1, 100, pMatrix);
+		m.lookAt(camPosition, [0, 0, -1], camUp, vMatrix);
 		m.multiply(pMatrix, vMatrix, vpMatrix);
-		
+
+		firstPerson = true;
+
 		render();
+
 
 		if(run){requestAnimationFrame(three);}
 
 	}
 
 	function render(){
-		
+
+		var qMatrix = m.identity(m.create());
+		q.toMatIV(qt, qMatrix);
+
 		/*-----------------------------------------------------------------------
-		 Cone:モデル変換座標行列
+		 Circle:モデル変換座標行列
+		-----------------------------------------------------------------------*/
+		m.identity(mMatrix);
+		m.multiply(mMatrix, qMatrix, mMatrix);
+		m.multiply(vpMatrix, mMatrix, mvpMatrix);
+		m.inverse(mMatrix, invMatrix);
+
+		// uniformLocationへ座標変換行列を登録
+		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+		gl.uniform1f(uniLocation[3], pointSize);
+
+		//VBO,IBOのバインド
+		// VBOのバインドと登録
+		set_attribute(circleVBO, attLocation, attStride);
+
+		// IBOをバインド
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cIbo);
+
+		// = レンダリング =========================================================
+		// モデルの描画
+		gl.drawArrays(gl.POINTS, 0, cIndex.length);
+
+		/*-----------------------------------------------------------------------
+		 Sound Cone:モデル変換座標行列
 		 translate:可
 		 scale:可？
 		 rotate:可
 		-----------------------------------------------------------------------*/
 
 		m.identity(mMatrix);
-		// 初期位置[0, 0, -1]
-		m.translate(mMatrix, SRC_INIT_POSITION, mMatrix);
+		// 初期位置SRC_POSITION
+		m.multiply(mMatrix, qMatrix, mMatrix);
+		//m.translate(mMatrix, SRC_POSITION, mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
 
@@ -342,6 +397,7 @@ window.onload = function(){
 
 			analyser.getByteFrequencyData(freqs);
 			m.identity(mMatrix);
+			m.multiply(mMatrix, qMatrix, mMatrix);
 			m.multiply(vpMatrix, mMatrix, mvpMatrix);
 			m.inverse(mMatrix, invMatrix);
 
@@ -356,7 +412,7 @@ window.onload = function(){
 			fBufferColor = new Float32Array(freqToCircle(OUTER_ANGLE, DISTANCE, 8).c);
 			gl.bufferSubData(gl.ARRAY_BUFFER, 0, fBufferColor);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-			
+
 			//VBO,IBOのバインド
 			// VBOのバインドと登録
 			set_attribute(freqVBO, attLocation, attStride);
@@ -370,9 +426,8 @@ window.onload = function(){
 		}
 
 		/*-----------------------------------------------------------------------
-		 Circle:モデル変換座標行列
-		 transrate不可(円が大きくなるため)
-		-----------------------------------------------------------------------*/
+		  Sound Listener
+		 -----------------------------------------------------------------------*/
 		m.identity(mMatrix);
 		m.multiply(vpMatrix, mMatrix, mvpMatrix);
 		m.inverse(mMatrix, invMatrix);
@@ -385,37 +440,62 @@ window.onload = function(){
 
 		//VBO,IBOのバインド
 		// VBOのバインドと登録
-		set_attribute(circleVBO, attLocation, attStride);
+		set_attribute(lVBO, attLocation, attStride);
 
 		// IBOをバインド
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cIbo);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, lIbo);
 
 		// = レンダリング =========================================================
 		// モデルの描画
-		gl.drawArrays(gl.POINTS, 0, cIndex.length);
+		gl.drawArrays(gl.POINTS, 0, lIndex.length);
 
-		/*-----------------------------------------------------------------------
-		 XY Axis
-		-----------------------------------------------------------------------*/
-		m.identity(mMatrix);
-		m.multiply(vpMatrix, mMatrix, mvpMatrix);
-		m.inverse(mMatrix, invMatrix);
+		if(firstPerson === false){
+			/*-----------------------------------------------------------------------
+				XY Axis
+			-----------------------------------------------------------------------*/
+			m.identity(mMatrix);
+			m.multiply(vpMatrix, mMatrix, mvpMatrix);
+			m.inverse(mMatrix, invMatrix);
 
-		// uniformLocationへ座標変換行列を登録
-		gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
-		gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
-		gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
-		gl.uniform1f(uniLocation[3], pointSize);
+			// uniformLocationへ座標変換行列を登録
+			gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+			gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+			gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+			gl.uniform1f(uniLocation[3], pointSize);
 
-		//VBO,IBOのバインド
-		// VBOのバインドと登録
-		set_attribute(xyzVBO, attLocation, attStride);
+			//VBO,IBOのバインド
+			// VBOのバインドと登録
+			set_attribute(xyzVBO, attLocation, attStride);
+			
+			// IBOをバインド
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, xyzIbo);
+
+			gl.drawElements(gl.LINES, xyzIndex.length, gl.UNSIGNED_SHORT, 0);
+
+		}else if(firstPerson === true){
+			/*-----------------------------------------------------------------------
+				Floor mesh
+			-----------------------------------------------------------------------*/
+			m.identity(mMatrix);
+			m.multiply(vpMatrix, mMatrix, mvpMatrix);
+			m.inverse(mMatrix, invMatrix);
+
+			// uniformLocationへ座標変換行列を登録
+			gl.uniformMatrix4fv(uniLocation[0], false, mvpMatrix);
+			gl.uniformMatrix4fv(uniLocation[1], false, mMatrix);
+			gl.uniformMatrix4fv(uniLocation[2], false, invMatrix);
+			gl.uniform1f(uniLocation[3], pointSize);
+
+			//VBO,IBOのバインド
+			// VBOのバインドと登録
+			set_attribute(flVBO, attLocation, attStride);
+			
+			// IBOをバインド
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, flIbo);
+
+			gl.drawElements(gl.LINES, flIndex.length, gl.UNSIGNED_SHORT, 0);
+		}
 		
-		// IBOをバインド
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, xyzIbo);
-
-		gl.drawElements(gl.LINES, xyzIndex.length, gl.UNSIGNED_SHORT, 0);
-
 		// コンテキストの再描画
 		gl.flush();
 	}

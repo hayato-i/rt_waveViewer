@@ -20,21 +20,23 @@ var getAudioBuffer = function(url, fn) {
 };
 
 function updatePanner(pan){
-    // 現在のviewerで示している座標系はxyだが、これはxz
-    var rad = SRC_POSITION * Math.PI / 180;
     pan.coneInnerAngle = INNER_ANGLE;
     pan.coneOuterAngle = OUTER_ANGLE;
-    panner.panningModel = PANNING_MODEL;
-    panner.distanceModel = DISTANCE_MODEL;
-    var x = Math.cos(rad) * DISTANCE;
-    var y = 0.0;
-    var z = (-1) * Math.sin(rad) * DISTANCE;
-    var dx = -1 * x / DISTANCE;
-    var dy = 0.0;
-    var dz = -1 * z / DISTANCE;
-    pan.setPosition(x, y, z);
+    pan.panningModel = PANNING_MODEL;
+    pan.distanceModel = DISTANCE_MODEL;
+
+    var x = listener.positionX.value-SRC_POSITION[0];
+    var y = listener.positionY.value-SRC_POSITION[1];
+    var z = listener.positionZ.value-SRC_POSITION[2];
+
+    var sq = Math.sqrt(x*x+y*y+z*z);
+
+    var dx = x/sq;
+    var dy = y/sq;
+    var dz = z/sq;
+
+    pan.setPosition(SRC_POSITION[0], SRC_POSITION[1], SRC_POSITION[2]);
     pan.setOrientation(dx, dy, dz);
-    //console.log(x,y,z,dx,dy,dz);
 }
 
 function audioInit(buffer){

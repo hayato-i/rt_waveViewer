@@ -41,15 +41,11 @@ void main(){
     <body>
         <div>
             <canvas id="main"></canvas>
-        <div class="xy">XY</div> 
-        <div class="xz">XZ</div>
-        <div class="yz">YZ</div>
-        <div class="xy-x">X</div>
-        <div class="xy-y">Y</div>
-        <div class="xz-x">X</div>
-        <div class="xz-z">Z</div>
-        <div class="yz-y">Y</div>
-        <div class="yz-z">Z</div>
+            <div class="xy">XY</div> 
+            <div class="xz">XZ</div>
+            <div class="yz">YZ</div>
+            <div class="fp">FP</div>
+        </div>
         <div class="control">
             <p>Listener looks -Z forword.</p>
             <p><label>Devices :</label><select name="device" id="device">
@@ -61,12 +57,10 @@ void main(){
                 <option value="inverse">Inverse</option>
                 <option value="exponential">Exponential</option>
             </select></p>
-            <p><label>Position(C=0,R=-90,L=+90):<span id="postext">0</span> </label><input type="range" id="position" value="90" max="270" min="-90" step="10"></p>
+            <p><label>Sound Position : Mouse control(DRAG)</p>
             <p><label>Sound Outer Angle: <span id="iatext">45</span> </label><input type="range" id="angle" value="45" max="360" min="0" step="15"></p>
-            <p><label>Source Distance: </label><input type="form" id="sd" value="1" min="0" max="30" step="0.1"></p>
-            <p><label>Cam Range: </label><input type="range" id="cd" value="3" min="3" max="30" step="1"></p>
+            <p><label>Camera Range: </label><input type="range" id="cd" value="3" min="3" max="30" step="1"></p>
             <p><input type="button" id="btn" value="Play"></p>
-        </div>
         </div>
     </body>
 </html>

@@ -15,9 +15,12 @@ var camUpXY  = [ 0.0, 1.0,  0.0];
 var camUpXZ  = [ 0.0, 0.0, -1.0];
 var camUpYZ  = [ 0.0, 1.0,  0.0];
 
-// 音源位置（同心円状の角度）default 90(=C)
-var SRC_POSITION = 90;
-var SRC_INIT_POSITION = [0, 0, -1];
+// 音源位置
+var SRC_POSITION = [0, 0, -1];
+// Listener情報
+var camLisFr = [ 0.0, 0.0, -1.0];
+var camLisUp = [ 0.0, 1.0, 0.0];
+
 // Panner Nodeパラメータ
 var sPosX = 0;
 var sPosY = 0;
@@ -35,13 +38,12 @@ var PANNING_MODEL = 'HRTF';
 var DISTANCE_MODEL = 'linear';
 
 // Listner position
-var LX = 0.0;
-var LY = 0.0;
-var LZ = 0.0;
+var LisPos = [0.0, 0.0, 0.0];
 
 // main canvas 
 var gl, vs, fs;
 var mainc, hidc;
+var mx=0, my=0;
 var hidContext;
 //var ext = gl.getExtension('OES_element_index_uint');
 
@@ -53,9 +55,34 @@ analyser.fftSize = FFTSIZE;
 analyser.minDecibels = -120;
 analyser.maxDecibels = -30;
 var afbc = analyser.frequencyBinCount;
-var freqs = new Uint8Array(afbc);
-var flags = false;
+var freqs  = new Uint8Array(afbc);
+var flags  = false;
+var mflags = false;
+var firstPerson = false;
 
+var q = new qtnIV();
+var qt = q.identity(q.create());
+
+// マウスムーブイベントに登録する処理
+function mouseMove(e){
+    var cw = mainc.width;
+    var ch = mainc.height;
+    var wh = 1 / Math.sqrt(cw * cw + ch * ch);
+    mx = e.clientX - mainc.offsetLeft - cw * 0.5;
+    my = e.clientY - mainc.offsetTop - ch * 0.5;
+    var sq = Math.sqrt(mx * mx + my * my);
+    var r = sq * 4.0 * Math.PI * wh;
+    if(sq != 1){
+        sq = 1 / sq;
+        mx *= sq;
+        my *= sq;
+    }
+    if(mflags === true){
+	    q.rotate(r, [my, mx, 0.0], qt);
+        q.toVecIII([0.0, 0.0, -1.0], qt, SRC_POSITION);
+        updatePanner(panner);
+    }
+}
 
 // XYZ軸線-------------------------------------------------
 function xyzAxis(dist){
@@ -85,6 +112,52 @@ function xyzAxis(dist){
     return {p:pos, idx:id, c:col};
 }
 
+/*--------------------------------------------------------
+    Listener
+---------------------------------------------------------*/
+function soundListener(){
+    var pos = new Array();
+    var id  = new Array();
+    var col = new Array();
+
+    pos.push(0.0, 0.0, 0.0);
+    col.push(1.0, 0.5, 0.5, 1.0);
+    id.push(1);
+
+    return {p:pos, idx:id, c:col};
+}
+
+function floor(mesh){
+    var pos = new Array();
+    var id  = new Array();
+    var col = new Array();
+
+    var length = mesh/2;
+
+    // x -lenからlenまで
+
+    for(var i = 0;i <= mesh ;i++){
+        pos.push(-length, -0.5 , -length+i);
+        pos.push( length, -0.5 , -length+i);
+        col.push(1.0, 1.0, 1.0, 1.0);
+        col.push(1.0, 1.0, 1.0, 1.0);
+    }
+
+    // z -lenからlenまで
+    for(var i = 0;i <= mesh ;i++){
+        pos.push(-length+i, -0.5 ,-length);
+        pos.push(-length+i, -0.5 , length);
+        col.push(1.0, 1.0, 1.0, 1.0);
+        col.push(1.0, 1.0, 1.0, 1.0);
+    }
+
+    for(var i = 0; i <= mesh*4 ;i+=2){
+        id.push(i, i+1);
+    }
+
+    return {p:pos, idx:id, c:col};
+}
+
 /*---------------------------------------------------------  
 	Circle関数
 	num:分割数
@@ -104,15 +177,16 @@ function circle(num, r){
         //console.log("x: ",x,"y: ",y);
         y = 0.0;
         pos.push(x, y, z);
-		col.push(0.0, 0.7, 1.0, 1.0);
+        if(i===9){
+            col.push(1.0, 0.0, 0.0, 0.7);
+        }else{
+		    col.push(0.0, 0.7, 1.0, 1.0);
+        }
     }
-    pos.push(0.0, 0.0, 0.0);
-	col.push(1.0, 0.7, 0.0, 0.7);
 
     for(i=0; i<num; i++){
         id.push(i);
     }
-	id.push(0);
 
     return {p:pos, idx:id, c:col};
 }
@@ -128,11 +202,11 @@ function soundCone(degree, r){
     var col = new Array();
     var x = 0;
     var y = 0;
-    var z = 0;
+    var z = -1;
 
 	// 扇の開き
     var rad = degree * Math.PI / 180;
-    var posRad = SRC_POSITION % 360 * Math.PI / 180;
+    var posRad = 90 % 360 * Math.PI / 180;
     
     // 単位円における(0.0, 1.0, 0.0)を基本位置とする
 	// 発音点(距離倍)
@@ -190,12 +264,12 @@ function freqToCircle(degree, len, num){
 
     var rad = degree * Math.PI / 180;
     var jrad = 360 / num * Math.PI / 180;
-    var posRad = SRC_POSITION % 360 * Math.PI / 180;
+    var posRad = 90 % 360 * Math.PI / 180;
     var posRad2 = rad / 2;
 
-    var x = SRC_INIT_POSITION[0]; //  0
-    var y = SRC_INIT_POSITION[1]; //  0
-    var z = SRC_INIT_POSITION[2]; // -1
+    var x = SRC_POSITION[0]; //  0
+    var y = SRC_POSITION[1]; //  0
+    var z = SRC_POSITION[2]; // -1
 
     // x = rsinθcosφ
     // y = rsinθsinφ
