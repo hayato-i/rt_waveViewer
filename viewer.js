@@ -493,7 +493,7 @@ window.onload = function(){
 			gl.drawElements(gl.LINES, xyzIndex.length, gl.UNSIGNED_SHORT, 0);
 
 		}
-		if(mesh === true){
+		if(meshFlag === true){
 			/*-----------------------------------------------------------------------
 				Floor mesh
 			-----------------------------------------------------------------------*/

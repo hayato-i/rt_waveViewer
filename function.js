@@ -1,5 +1,5 @@
 // Globalアクセス
-// AudioContext-------------------------------------------------------------------------------
+// AudioContext-------------------------------------------------------------------------
 var audioCont = new AudioContext();
 var destination = audioCont.destination;
 var analyser = audioCont.createAnalyser();
@@ -25,7 +25,7 @@ var camLisUp = [ 0.0, 1.0, 0.0];
 // Panner Nodeパラメータ
 var sPosX = 0;
 var sPosY = 0;
-var sPosZ = -1; 
+var sPosZ = -1;
 
 // OUTER_ANGLE>INNER_ANGLE
 var INNER_ANGLE = 0;
@@ -68,7 +68,7 @@ var meshFlag = false;
 var q = new qtnIV();
 var qt = q.identity(q.create());
 
-// マウスムーブイベントに登録する処理
+// マウスムーブイベント------------------------------------
 function mouseMove(e){
     var cw = mainc.width;
     var ch = mainc.height;
@@ -251,7 +251,6 @@ function freqToCircle(degree, len, num){
     /******************************************************************************** 
         周波数領域で色分けしたサークル上の図形を表示する
         位置:距離を周波数分割数で割る。
-        　 基本的な考え方は円柱を色で分けていた杉本さんのプログラムと同じはず
         色  :freqで表現している色をそのまま活用
         20170321追記:
         極座標系を扱わないとY軸の計算が合わない。
