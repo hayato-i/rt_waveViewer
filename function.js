@@ -264,7 +264,21 @@ function freqToCircle(degree, len, num){
 
     // addPosFromDeg:45度単位で中間ポイントの追加
     // プロット数は4ずつ増加する
-    var addPosFromDeg = degree / 45;
+    var addRad = new Array();
+    addRad = [
+        0   * Math.PI / 180, 
+        45  * Math.PI / 180, 
+        90  * Math.PI / 180, 
+        135 * Math.PI / 180, 
+        180 * Math.PI / 180,
+        225 * Math.PI / 180,
+        270 * Math.PI / 180,
+        315 * Math.PI / 180,
+        360 * Math.PI / 180
+    ]
+    
+    var addPosFromDeg = Math.floor(degree / 45);
+    //console.log(addPosFromDeg);
 
     var rad = degree * Math.PI / 180;
     var jrad = 360 / num * Math.PI / 180;
@@ -296,7 +310,8 @@ function freqToCircle(degree, len, num){
     
     // Length/i = 周波数対位置
     // OUTER_ANGLEによるプロット位置の増加
-    // 45度間隔
+    // 45度ずつ点の追加を行う
+
     for(i = 0; i < afbc; i++){
         // hzは距離の分割数に相当する。
         hz = z - (z / (afbc-1)) * i;
@@ -312,10 +327,8 @@ function freqToCircle(degree, len, num){
         g = hueFunc[1];
         b = hueFunc[2];
         a = hueFunc[3];
-        
         for(j = 0; j < num; j++){
-            // 極座標系でのプロット
-            // 0, 1, 2, 3
+            // 円上
             jx =  ilength * t1x * Math.cos(jrad * j);
             jy =  ilength * t1y * Math.sin(jrad * j);
             jz =  ilength * t1z + hz;
@@ -324,6 +337,39 @@ function freqToCircle(degree, len, num){
             pos.push(jx, jy, jz);
             col.push(r, g, b, a);
         }
+        // add none
+        if(degree>=0 && 45>degree){
+            
+        }
+        // add 4(45)
+        else if(degree>=45 && 90>degree){
+
+        }
+        // add 8(45, 90)
+        else if(degree>=90 && 135>degree){
+
+        }
+        // add 12(45, 90, 135)
+        else if(degree>=135 && 180>degree){
+
+        }
+        // add 16(45, 90, 135, 180)
+        else if(degree>=225 && 270>degree){
+
+        }
+        // add 20(45, 90, 135, 180, 225)
+        else if(degree>=270 && 315>degree){
+
+        }
+        // add 24(45, 90, 135, 180, 225, 270)
+        else if(degree>=315 && 360>degree){
+
+        }
+        // add 28(45, 90, 135, 180, 225, 270, 315)
+        else{
+
+        }
+
         // 4i(中央)
         pos.push(0, 0, hz * len);
         col.push(r, g, b, 0.7);
