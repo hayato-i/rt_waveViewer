@@ -266,7 +266,6 @@ function freqToCircle(degree, len, num){
     // プロット数は4ずつ増加する
     var addRad = new Array();
     addRad = [
-        0   * Math.PI / 180, 
         45  * Math.PI / 180, 
         90  * Math.PI / 180, 
         135 * Math.PI / 180, 
@@ -343,15 +342,24 @@ function freqToCircle(degree, len, num){
         }
         // add 4(45)
         else if(degree>=45 && 90>degree){
-
+            
+            jx =  ilength * t1x * Math.cos(jrad * j);
+            jy =  ilength * t1y * Math.sin(jrad * j);
+            jz =  ilength * t1z + hz;
+            pos.push(jx, jy, jz);
+            col.push(r, g, b, a);
+            
+            // X+ 8 y+ 9 X- 10 Y- 11
+            //   
         }
         // add 8(45, 90)
         else if(degree>=90 && 135>degree){
-
+            // X+ 8,9 Y+ 10,11 X- 12,13 Y- 14,15
+            // 
         }
         // add 12(45, 90, 135)
         else if(degree>=135 && 180>degree){
-
+            // X+ 8,9,10 Y+ 11,12,13 X- 14,15,16 Y- 17,18,19
         }
         // add 16(45, 90, 135, 180)
         else if(degree>=225 && 270>degree){
@@ -386,17 +394,17 @@ function freqToCircle(degree, len, num){
         var l = (i+1) * (num+1);
         id.push(l-2, l-(num+1), l, l-2, l, l+num-1);
 
+
         // 球面の分割(中心点4i)
         var n = (i+1) * (num+1) -1;
         for(j = 0; j < num - 1 ;j++){
             id.push(n, n-num+j, n-num+j+1);
         }
-        // 4 3 0
-        // 9 8 5
+        // 閉じ部分
         id.push(n, n-1, n-num);
     }
 
-    //最後の球面
+    //最後の球面->汎用化
     var m = (num+1) * afbc-1;
     id.push(m, m-num,   m-num+1);
     id.push(m, m-num+1, m-num+2);
